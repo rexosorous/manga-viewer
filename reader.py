@@ -2,12 +2,14 @@
 from os import listdir
 
 # dependencies
-from PyQt5 import QtWidgets
+from PyQt5.QtWidgets import QMainWindow
+from PyQt5.QtWidgets import QShortcut
 from PyQt5.QtCore import Qt
+from PyQt5.QtCore import pyqtSignal
 from PyQt5.QtGui import QPixmap
 
 # local modules
-from reader_window import Ui_MainWindow
+from ui.reader_window import Ui_MainWindow
 
 
 
@@ -15,16 +17,16 @@ from reader_window import Ui_MainWindow
 """
 TODO
     * connect back and edit buttons
-    * connect 'esc' key to same func as back button
     * populate page_list and allow clicking to jump pages
     * populate series_list and allow clicking to jump books
 """
 
 
-class Reader(QtWidgets.QMainWindow, Ui_MainWindow):
+class Reader(QMainWindow, Ui_MainWindow):
     """Window used to read pages in the manga
 
     Attributes:
+        close_book_signal (pyqtSignal): emitted to close the reader
         image (QLabel): label used to load pixmaps onto
         page_counter (QLabel): shows the current page. should be 'Page x/y'
         back_button (QPushButton): goes back to the main window
@@ -35,24 +37,38 @@ class Reader(QtWidgets.QMainWindow, Ui_MainWindow):
         current_page (int): the page of the book currently being viewed. 0 for the first page
         size (float): size multiplier. ex: 1 means 100%, 1.1 means 110%, 0.9 means 90%
     """
+    close_book_signal = pyqtSignal()
+
     def __init__(self):
         super().__init__()
         self.setupUi(self)
 
         # init attributes
-        self.pages = self.get_imgs()
+        self.directory = ''
+        self.pages = []
         self.current_page = 0
         self.size = 1
 
-        # change displayed images/text
-        self.page_counter.setText(f'Page {self.current_page+1}/{len(self.pages)}')
-        self.draw()
-
         # add hotkeys
-        QtWidgets.QShortcut(Qt.Key_Right, self, self.next_page)
-        QtWidgets.QShortcut(Qt.Key_Left, self, self.prev_page)
-        QtWidgets.QShortcut(Qt.Key_Equal, self, self.zoom_in)
-        QtWidgets.QShortcut(Qt.Key_Minus, self, self.zoom_out)
+        QShortcut(Qt.Key_Right, self, self.next_page)
+        QShortcut(Qt.Key_Left, self, self.prev_page)
+        QShortcut(Qt.Key_Equal, self, self.zoom_in)
+        QShortcut(Qt.Key_Minus, self, self.zoom_out)
+        QShortcut(Qt.Key_Escape, self, self.close)
+
+        # connect buttons
+        self.back_button.pressed.connect(self.close)
+
+
+
+    def open_book(self, book_directory):
+        """Loads a book's pages
+        """
+        self.directory = book_directory
+        self.pages = self.get_imgs()
+        self.current_page = 0
+        self.draw()
+        self.page_counter.setText(f'Page {self.current_page+1}/{len(self.pages)}')
 
 
 
@@ -108,7 +124,7 @@ class Reader(QtWidgets.QMainWindow, Ui_MainWindow):
         Returns:
             [str]: a relative directory for each file
         """
-        return [f'jojo/{x}' for x in listdir('jojo/')]
+        return [f'{self.directory}/{x}' for x in listdir(f'{self.directory}/')]
 
 
 
@@ -122,3 +138,12 @@ class Reader(QtWidgets.QMainWindow, Ui_MainWindow):
         self.image.setPixmap(pixmap)
         self.page_counter.setText(f'Page {self.current_page+1}/{len(self.pages)}')
         self.scrollArea.verticalScrollBar().setSliderPosition(0)
+
+
+
+    def close(self):
+        """Closes this window and switches back to the home window
+
+        Called when the back button is pressed or the escape key is pressed
+        """
+        self.close_book_signal.emit()

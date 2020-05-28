@@ -4,12 +4,14 @@ from os import listdir
 import random
 
 # dependencies
-from PyQt5 import QtWidgets
+from PyQt5.QtWidgets import QMainWindow
+from PyQt5.QtWidgets import QMenu
 from PyQt5 import QtCore
-from PyQt5 import QtGui
 
 # local modules
-from main_window import Ui_MainWindow
+from ui.main_window import Ui_MainWindow
+import spines
+import constants as const
 
 
 
@@ -17,12 +19,11 @@ from main_window import Ui_MainWindow
 """
 TODO
     * implement search bar functionality
-    * connect buttons
     * implement sorting
+    * write logic for side panel (editing book details and search filter)
 """
 
-
-class Home(QtWidgets.QMainWindow, Ui_MainWindow):
+class Home(QMainWindow, Ui_MainWindow):
     """Window used to read pages in the manga
 
     Attributes:
@@ -31,24 +32,46 @@ class Home(QtWidgets.QMainWindow, Ui_MainWindow):
         adv_search_button (QPushButton): opens a new window with all searchable options
         sort_by (QComboBox): contains "Alphabetically", "Rating", and "Randomly"
         random_button (QPushButton): randomly selects from the list
-        gallery (QGridLayout): the layout where all the books will be displayed
-        gallery_area (QScrollArea): the whole area where books will be displayed
+
+        bookshelf (QGridLayout): the layout where all the books will be displayed
+        bookshelf_area (QScrollArea): the whole area where books will be displayed
+
+        side_header (QLabel):
+        side_img (QLabel):
+        side_help (QTextBrowser):
+        side_title_text (QLineEdit):
+        side_artist_text (QLineEdit):
+        side_artist_dropdown (QComboBox):
+        side_artist_list (QListWidget):
+        side_collection_text (QLineEdit):
+        side_collection_dropdown (QComboBox):
+        side_order_number (QSpinBox): >= 0
+        side_rating_number (QSpinBox): 0 <= x <= 10
+        side_rating_toggle (QCheckBox): include higher ratings if checked else only this rating
+        side_genre_text (QLineEdit):
+        side_genre_dropdown (QComboBox):
+        side_genre_list (QListWidget):
+        side_tags_list (QLineEdit):
+        side_tags_dropdown (QComboBox):
+        side_tags_list (QListWidget):
+
+        open_book_signal (pyqtSignal): triggered to open a book to read
         books ([QFrame]): holds a list of all book frames
         selected ([QFrame]): holds all currently selected books
-        default_color (QPalette): the background color for book entries
-        highlight_color (QPalette): the background color for book entries when they're highlighted
     """
-    def __init__(self):
+    open_book_signal = QtCore.pyqtSignal(str)
+
+    def __init__(self, directory):
         super().__init__()
         self.setupUi(self)
+
+        # init attributes
+        self.directory = directory
         self.books = []
         self.selected = []
 
-        self.default_color = QtGui.QPalette()
-        self.default_color.setColor(QtGui.QPalette.Window, QtGui.QColor.fromRgb(50, 50, 50))
-
-        self.highlight_color = QtGui.QPalette()
-        self.highlight_color.setColor(QtGui.QPalette.Window, QtGui.QColor.fromRgb(125, 125, 125))
+        # set up ui
+        self.side_help.setVisible(False)
 
         self.connect_signals()
         self.generate_books()
@@ -59,11 +82,33 @@ class Home(QtWidgets.QMainWindow, Ui_MainWindow):
     def connect_signals(self):
         """Connects each signal to their respective functions
         """
-        # self.sort_by.currentIndexChanged.connect(self.populate)
+        self.adv_search_button.clicked.connect(self.toggle_side_panel)
         self.sort_by.currentIndexChanged.connect(self.populate)
         self.random_button.clicked.connect(self.random_select)
-        self.gallery_area.contextMenuEvent = self.context_menu
-        self.gallery_area.mousePressEvent = self.reset_selected
+        self.bookshelf_area.contextMenuEvent = self.context_menu
+        self.bookshelf_area.mousePressEvent = self.reset_selected
+        self.bookshelf_area.keyPressEvent = self.keyboard_handler
+
+
+
+    def toggle_side_panel(self):
+        """Switches the side panel from details to advanced search and vice-versa
+
+        Note:
+            Most elements stay the same in both
+        """
+        if self.side_img.isVisible():
+            # switch to filter
+            self.side_img.setVisible(False)
+            self.side_help.setVisible(True)
+            self.side_header.setText('Advanced Search')
+            self.side_submit_button.setText('Filter')
+        else:
+            # switch to details
+            self.side_help.setVisible(False)
+            self.side_img.setVisible(True)
+            self.side_header.setText('Details')
+            self.side_submit_button.setText('Submit Changes')
 
 
 
@@ -71,70 +116,48 @@ class Home(QtWidgets.QMainWindow, Ui_MainWindow):
         """Randomly selects a book from the list
         """
         self.reset_selected()
-
         choice = random.choice(self.books)
         self.highlight(choice)
         self.selected = [choice]
 
 
 
+    def keyboard_handler(self, event):
+        """Unhighlights a book in the gallery when the mouse leaves the area
+
+        Args:
+            event (QKeyEvent): The event that was emitted
+        """
+        if event.key() == QtCore.Qt.Key_A and event.modifiers() == QtCore.Qt.ControlModifier: # control + a
+            # select all books
+            for book in self.books:
+                self.selected.append(book) if book not in self.selected else None
+                self.highlight(book)
+
+        # arrow key navigation
+        # elif event.key() == QtCore.Qt.Key_Up:
+        # elif event.key() == QtCore.Qt.Key_Right:
+        # elif event.key() == QtCore.Qt.Key_Down:
+        # elif event.key() == QtCore.Qt.Key_Left:
+
+
+
+
     def generate_books(self):
         """Creates objects for the books
         """
-        for book in listdir('test_library/'):
+        for book in listdir(f'{self.directory}/'):
             # set up frame
-            frame = QtWidgets.QFrame()
-            frame.setFixedHeight(471)
-            frame.setFixedWidth(296)
-            frame.setFrameShape(QtWidgets.QFrame.Box)
-            frame.setFrameShadow(QtWidgets.QFrame.Raised)
-            frame.setContentsMargins(3, 3, 3, 3)
-            frame.setPalette(self.default_color)
-            frame.setAutoFillBackground(True)
-
-            # set up layout
-            layout = QtWidgets.QVBoxLayout()
-            layout.setAlignment(QtCore.Qt.AlignCenter)
-            layout.setContentsMargins(0, 0, 0, 0)
-            layout.setSpacing(5)
-            frame.setLayout(layout)
-
-            # set up cover page
-            img = QtWidgets.QLabel()
-            img.setFixedWidth(280)
-            img.setFixedHeight(400)
-            img.setAlignment(QtCore.Qt.AlignCenter)
-            img.setContentsMargins(0, 0, 0, 0)
-            pixmap = QtGui.QPixmap(f"test_library/{book}/{listdir(f'test_library/{book}')[0]}")
-            pixmap = pixmap.scaledToHeight(400, QtCore.Qt.SmoothTransformation)
-            crop = QtCore.QRect((pixmap.width() - 280) / 2, (pixmap.height() - 400) / 2, 280, 400)
-            pixmap = pixmap.copy(crop)
-            img.setPixmap(pixmap)
-            layout.addWidget(img)
-
-            # set up title
-            title = QtWidgets.QLabel()
-            title.setFixedWidth(280)
-            title.setFixedHeight(50)
-            title.setAlignment(QtCore.Qt.AlignCenter)
-            title.setContentsMargins(0, 0, 0, 0)
-            title.setPalette(self.highlight_color)
-            title.setAutoFillBackground(True)
-            title.setWordWrap(True)
-            title.setText(book)
-            titlefont = QtGui.QFont()
-            titlefont.setPointSize(14)
-            title.setFont(titlefont)
-            layout.addWidget(title)
+            spine = spines.BookSpine(book, self.directory)
 
             # add the new frames to the list
-            self.books.append(frame)
+            self.books.append(spine)
 
             # connect events
-            frame.mousePressEvent = partial(self.select, self.books[-1])
-            frame.mouseDoubleClickEvent = partial(self.open_book, self.books[-1])
-            frame.enterEvent = partial(self.highlight, self.books[-1])
-            frame.leaveEvent = partial(self.unhighlight, self.books[-1])
+            spine.mousePressEvent = partial(self.select, self.books[-1])
+            spine.mouseDoubleClickEvent = partial(self.open_book, self.books[-1])
+            spine.enterEvent = partial(self.highlight, self.books[-1])
+            spine.leaveEvent = partial(self.unhighlight, self.books[-1])
 
 
 
@@ -154,7 +177,19 @@ class Home(QtWidgets.QMainWindow, Ui_MainWindow):
         row_pos = 0
         col_pos = 0
         for book in self.books:
-            self.gallery.addWidget(book, col_pos, row_pos)
+            self.bookshelf.addWidget(book, col_pos, row_pos)
+
+            # calculate next position
+            row_pos += 1
+            if row_pos > 4: # max 5 columns. aka 5 slots per row
+                row_pos = 0
+                col_pos += 1
+
+        while col_pos <= 1:
+            # if there's only a few books, place invisible frames to shove things into the top left corner
+            # this avoids books showing up in the middle and messing up the look of the gallery
+            blank = spines.BlankSpine()
+            self.bookshelf.addWidget(blank, col_pos, row_pos)
 
             # calculate next position
             row_pos += 1
@@ -167,8 +202,8 @@ class Home(QtWidgets.QMainWindow, Ui_MainWindow):
     def clear(self):
         """Clears the gallery of all books
         """
-        for i in reversed(range(self.gallery.count())):
-            self.gallery.itemAt(i).widget().setParent(None)
+        for i in reversed(range(self.bookshelf.count())):
+            self.bookshelf.itemAt(i).widget().setParent(None)
 
 
 
@@ -178,6 +213,10 @@ class Home(QtWidgets.QMainWindow, Ui_MainWindow):
         If a book is clicked, it selects just that one book.
         If a book is control + clicked, it selects each book that is clicked this way.
         If a book is shift + clicked, it selects each book between the current click and the last one.
+
+        Args:
+            source (QFrame): The frames that represent the book that was double clicked
+            event (QMouseEvent): The event that was emitted
         """
         if event.button() != 1: # left click
             return
@@ -201,8 +240,8 @@ class Home(QtWidgets.QMainWindow, Ui_MainWindow):
             if not self.selected: # don't do anything if there hasn't already been a first selection
                 return
 
-            last = self.gallery.indexOf(self.selected[-1])
-            new = self.gallery.indexOf(source)
+            last = self.bookshelf.indexOf(self.selected[-1])
+            new = self.bookshelf.indexOf(source)
 
             if last < new:
                 select_queue = self.books[last:new+1]
@@ -224,7 +263,7 @@ class Home(QtWidgets.QMainWindow, Ui_MainWindow):
             source (QFrame): The frames that represent the book that was double clicked
             event (QMouseEvent): The event that was emitted. Unused, but required by PyQt5
         """
-        print('double clicked!')
+        self.open_book_signal.emit(f'{self.directory}/{source.title}')
 
 
 
@@ -235,7 +274,7 @@ class Home(QtWidgets.QMainWindow, Ui_MainWindow):
             source (QFrame): The frames that represent the book that was double clicked
             event (QMouseEvent, optional): The event that was emitted. Unused, but required by PyQt5
         """
-        source.setPalette(self.highlight_color)
+        source.setPalette(const.highlight_color)
 
 
 
@@ -247,12 +286,18 @@ class Home(QtWidgets.QMainWindow, Ui_MainWindow):
             event (QMouseEvent, optional): The event that was emitted. Unused, but required by PyQt5
         """
         if source not in self.selected:
-            source.setPalette(self.default_color)
+            source.setPalette(const.default_color)
 
 
 
     def reset_selected(self, event=None):
-        if event and event.button() != 1:
+        """Unhighlights all books and resets self.selected
+
+        Args:
+            event (QMouseEvent, optional): The event that was emitted
+        """
+        if event and event.button() != 1: # left click
+            # don't unhighlight if right clicking
             return
 
         while self.selected:
@@ -267,10 +312,9 @@ class Home(QtWidgets.QMainWindow, Ui_MainWindow):
         "Open Containing Folder": opens windows explorer for the most recently selected book
 
         Args:
-            source (QFrame): The frames that represent the book that was double clicked
             event (QMouseEvent): The event that was emitted. Unused, but required by PyQt5
         """
-        menu = QtWidgets.QMenu()
+        menu = QMenu()
         edit = menu.addAction('Edit')
         open_ = menu.addAction('Open Containing Folder')
         if (selection := menu.exec_(event.globalPos())):
