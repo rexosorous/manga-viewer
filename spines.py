@@ -29,6 +29,7 @@ class BookSpine(QtWidgets.QFrame):
         super().__init__()
         self.layout = QtWidgets.QVBoxLayout()
         self.title = title
+        self.image = None
 
         self.setup_frame()
         self.setup_layout()
@@ -41,7 +42,7 @@ class BookSpine(QtWidgets.QFrame):
         self.setFrameShape(QtWidgets.QFrame.Box)
         self.setFrameShadow(QtWidgets.QFrame.Raised)
         self.setContentsMargins(3, 3, 3, 3)
-        self.setPalette(const.default_color)
+        self.setPalette(const.primary_color)
         self.setAutoFillBackground(True)
 
     def setup_layout(self):
@@ -56,11 +57,11 @@ class BookSpine(QtWidgets.QFrame):
         img.setFixedHeight(const.spine_img_height)
         img.setAlignment(QtCore.Qt.AlignCenter)
         img.setContentsMargins(0, 0, 0, 0)
-        pixmap = QPixmap(f'{directory}/{self.title}/{listdir(f"{directory}/{self.title}/")[0]}')
-        pixmap = pixmap.scaledToHeight(const.spine_img_height, QtCore.Qt.SmoothTransformation)
-        crop = QtCore.QRect((pixmap.width() - const.spine_img_width) / 2, (pixmap.height() - const.spine_img_height) / 2, const.spine_img_width, const.spine_img_height)
-        pixmap = pixmap.copy(crop)
-        img.setPixmap(pixmap)
+        self.image = QPixmap(f'{directory}/{self.title}/{listdir(f"{directory}/{self.title}/")[0]}')
+        self.image = self.image.scaledToHeight(const.spine_img_height, QtCore.Qt.SmoothTransformation)
+        crop = QtCore.QRect((self.image.width() - const.spine_img_width) / 2, (self.image.height() - const.spine_img_height) / 2, const.spine_img_width, const.spine_img_height)
+        self.image = self.image.copy(crop)
+        img.setPixmap(self.image)
         self.layout.addWidget(img)
 
     def setup_title(self):
@@ -69,7 +70,7 @@ class BookSpine(QtWidgets.QFrame):
         title_label.setFixedHeight(50)
         title_label.setAlignment(QtCore.Qt.AlignCenter)
         title_label.setContentsMargins(0, 0, 0, 0)
-        title_label.setPalette(const.highlight_color)
+        title_label.setPalette(const.secondary_color)
         title_label.setAutoFillBackground(True)
         title_label.setWordWrap(True)
         title_label.setText(self.title)

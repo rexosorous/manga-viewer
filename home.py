@@ -13,6 +13,9 @@ from ui.main_window import Ui_MainWindow
 import spines
 import constants as const
 
+from details_panel import DetailsPanel
+from search_panel import SearchPanel
+from metadata_panel import MetadataPanel
 
 
 
@@ -20,7 +23,7 @@ import constants as const
 TODO
     * implement search bar functionality
     * implement sorting
-    * write logic for side panel (editing book details and search filter)
+    * write logic for side panels (editing book details and search filter)
 """
 
 class Home(QMainWindow, Ui_MainWindow):
@@ -29,35 +32,22 @@ class Home(QMainWindow, Ui_MainWindow):
     Attributes:
         search_bar (QLineEdit)
         search_button (QPushButton): same function as pressing entet in search bar
-        adv_search_button (QPushButton): opens a new window with all searchable options
+        details_button (QPushButton)
+        advanced_search_button (QPushButton): opens a new window with all searchable options
+        metadata_button (QPushButton):
         sort_by (QComboBox): contains "Alphabetically", "Rating", and "Randomly"
         random_button (QPushButton): randomly selects from the list
 
+        main_area (QHBoxLayout)
         bookshelf (QGridLayout): the layout where all the books will be displayed
         bookshelf_area (QScrollArea): the whole area where books will be displayed
-
-        side_header (QLabel):
-        side_img (QLabel):
-        side_help (QTextBrowser):
-        side_title_text (QLineEdit):
-        side_artist_text (QLineEdit):
-        side_artist_dropdown (QComboBox):
-        side_artist_list (QListWidget):
-        side_collection_text (QLineEdit):
-        side_collection_dropdown (QComboBox):
-        side_order_number (QSpinBox): >= 0
-        side_rating_number (QSpinBox): 0 <= x <= 10
-        side_rating_toggle (QCheckBox): include higher ratings if checked else only this rating
-        side_genre_text (QLineEdit):
-        side_genre_dropdown (QComboBox):
-        side_genre_list (QListWidget):
-        side_tags_list (QLineEdit):
-        side_tags_dropdown (QComboBox):
-        side_tags_list (QListWidget):
 
         open_book_signal (pyqtSignal): triggered to open a book to read
         books ([QFrame]): holds a list of all book frames
         selected ([QFrame]): holds all currently selected books
+        details_panel (DetailsPanel)
+        search_panel (SearchPanel)
+        metadata_panel (MetadataPanel)
     """
     open_book_signal = QtCore.pyqtSignal(str)
 
@@ -70,8 +60,10 @@ class Home(QMainWindow, Ui_MainWindow):
         self.books = []
         self.selected = []
 
-        # set up ui
-        self.side_help.setVisible(False)
+        self.details_panel = DetailsPanel()
+        self.search_panel = SearchPanel()
+        self.metadata_panel = MetadataPanel()
+        self.setup_panels()
 
         self.connect_signals()
         self.generate_books()
@@ -79,36 +71,28 @@ class Home(QMainWindow, Ui_MainWindow):
 
 
 
+    def setup_panels(self):
+        """Adds all panels to the main layout and makes only the details panel visible
+        """
+        self.main_area.addWidget(self.details_panel)
+        self.main_area.addWidget(self.search_panel)
+        self.main_area.addWidget(self.metadata_panel)
+        self.search_panel.setVisible(False)
+        self.metadata_panel.setVisible(False)
+
+
+
     def connect_signals(self):
         """Connects each signal to their respective functions
         """
-        self.adv_search_button.clicked.connect(self.toggle_side_panel)
+        self.details_button.clicked.connect(lambda : [self.details_panel.setVisible(True), self.search_panel.setVisible(False), self.metadata_panel.setVisible(False)])
+        self.advanced_search_button.clicked.connect(lambda : [self.details_panel.setVisible(False), self.search_panel.setVisible(True), self.metadata_panel.setVisible(False)])
+        self.metadata_button.clicked.connect(lambda : [self.details_panel.setVisible(False), self.search_panel.setVisible(False), self.metadata_panel.setVisible(True)])
         self.sort_by.currentIndexChanged.connect(self.populate)
         self.random_button.clicked.connect(self.random_select)
         self.bookshelf_area.contextMenuEvent = self.context_menu
         self.bookshelf_area.mousePressEvent = self.reset_selected
         self.bookshelf_area.keyPressEvent = self.keyboard_handler
-
-
-
-    def toggle_side_panel(self):
-        """Switches the side panel from details to advanced search and vice-versa
-
-        Note:
-            Most elements stay the same in both
-        """
-        if self.side_img.isVisible():
-            # switch to filter
-            self.side_img.setVisible(False)
-            self.side_help.setVisible(True)
-            self.side_header.setText('Advanced Search')
-            self.side_submit_button.setText('Filter')
-        else:
-            # switch to details
-            self.side_help.setVisible(False)
-            self.side_img.setVisible(True)
-            self.side_header.setText('Details')
-            self.side_submit_button.setText('Submit Changes')
 
 
 
@@ -286,7 +270,7 @@ class Home(QMainWindow, Ui_MainWindow):
             event (QMouseEvent, optional): The event that was emitted. Unused, but required by PyQt5
         """
         if source not in self.selected:
-            source.setPalette(const.default_color)
+            source.setPalette(const.primary_color)
 
 
 
