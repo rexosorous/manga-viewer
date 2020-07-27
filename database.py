@@ -1,8 +1,18 @@
+# standard libraries
 import sqlite3
+
+# local modules
+import exceptions
 
 
 
 class DBHandler:
+    """Controls connection and all interaction with the database.
+
+    Attributes:
+        conn (sqlite3.Connection)
+        db (sqlite3.Cursor)
+    """
     def __init__(self):
         self.conn = sqlite3.connect('mangalibrary.db')
         self.db = self.conn.cursor()
@@ -104,6 +114,30 @@ class DBHandler:
 
 
 
+    def get_metadata(self):
+        """Gets a list for each non-book table
+
+        Returns
+            dict: keys are table names, values are sqlite3.conn.cursor.fetchall()
+        """
+        data = dict()
+
+        self.db.execute('SELECT * FROM artists')
+        data['artists'] = self.db.fetchall()
+
+        self.db.execute('SELECT * FROM series')
+        data['series'] = self.db.fetchall()
+
+        self.db.execute('SELECT * FROM genres')
+        data['genres'] = self.db.fetchall()
+
+        self.db.execute('SELECT * FROM tags')
+        data['tags'] = self.db.fetchall()
+
+        return data
+
+
+
     def get_books(self):
         """Gets a list of every book in the dictionary
 
@@ -146,3 +180,53 @@ class DBHandler:
         info['tags'] = [x['id'] for x in tags]
 
         return info
+
+
+
+    def create_entry(self, table: str, name: str):
+        """Creates entries with the given information into the given table
+
+        Note:
+            Should only be used for non-book tables!
+
+        Args:
+            table (str)
+            name (str)
+
+        Raises:
+            exceptions.DuplicateEntry: If the entry that's attempting to be created already exists in the database
+        """
+        self.db.execute(f'SELECT * FROM {table} WHERE name="{name}"')
+        if self.db.fetchone():
+            raise exceptions.DuplicateEntry
+
+        self.db.execute(f'SELECT id FROM {table} ORDER BY id DESC LIMIT 1')
+        last_id = self.db.fetchone()
+        self.db.execute(f'INSERT INTO {table} VALUES({last_id["id"]+1}, "{name}", "")')
+        self.conn.commit()
+
+
+
+    def delete_entry(self, table: str, id_: int):
+        """Deletes an entry and all references to that entry from all tables
+
+        Args:
+            table (str)
+            id_ (int)
+        """
+        if table == 'books':
+            # deletes the book entry and all entries related to it in books_artists, books_genres, books_tags
+            self.db.exceute('DELETE FROM books_artists WHERE bookID=?', (id_,))
+            self.db.execute('DELETE FROM books_genres WHERE bookID=?', (id_,))
+            self.db.execute('DELETE FROM books_tags WHERE bookID=?', (id_,))
+            self.db.execute('DELETE FROM books WHERE id=?', (id_,))
+        elif table == 'series':
+            # deletes the series entry and sets any book's series field to NULL
+            self.db.execute('UPDATE books SET series=NULL WHERE series=?', (id_,))
+            self.db.execute('DELETE FROM series WHERE id=?', (id_,))
+        elif table in ['genres', 'series', 'tags']:
+            # deletes the entry and all entries related to it in its respective many-to-many through table
+            self.db.execute(f'DELETE FROM books_{table} WHERE {table[:-1]}ID={id_}')
+            self.db.execute(f'DELETE FROM {table} WHERE id={id_}')
+
+        self.conn.commit()

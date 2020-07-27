@@ -1,6 +1,9 @@
+# dependencies
 from PyQt5.QtWidgets import QFrame
 
+# local modules
 from ui.search_frame import Ui_search_panel
+
 
 
 class SearchPanel(QFrame, Ui_search_panel):

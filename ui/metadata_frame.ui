@@ -98,10 +98,10 @@
           <number>0</number>
          </property>
          <item>
-          <widget class="QLineEdit" name="artist_text"/>
+          <widget class="QLineEdit" name="artists_text"/>
          </item>
          <item>
-          <widget class="QPushButton" name="artist_submit">
+          <widget class="QPushButton" name="artists_submit">
            <property name="text">
             <string>Create</string>
            </property>
@@ -111,7 +111,11 @@
        </widget>
       </item>
       <item>
-       <widget class="QListView" name="artist_list"/>
+       <widget class="QListWidget" name="artists_list">
+        <property name="sortingEnabled">
+         <bool>true</bool>
+        </property>
+       </widget>
       </item>
      </layout>
     </widget>
@@ -185,7 +189,11 @@
        </widget>
       </item>
       <item>
-       <widget class="QListWidget" name="series_list"/>
+       <widget class="QListWidget" name="series_list">
+        <property name="sortingEnabled">
+         <bool>true</bool>
+        </property>
+       </widget>
       </item>
      </layout>
     </widget>
@@ -259,7 +267,11 @@
        </widget>
       </item>
       <item>
-       <widget class="QListWidget" name="genres_list"/>
+       <widget class="QListWidget" name="genres_list">
+        <property name="sortingEnabled">
+         <bool>true</bool>
+        </property>
+       </widget>
       </item>
      </layout>
     </widget>
@@ -333,7 +345,11 @@
        </widget>
       </item>
       <item>
-       <widget class="QListWidget" name="tags_list"/>
+       <widget class="QListWidget" name="tags_list">
+        <property name="sortingEnabled">
+         <bool>true</bool>
+        </property>
+       </widget>
       </item>
      </layout>
     </widget>
