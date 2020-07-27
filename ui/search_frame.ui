@@ -55,7 +55,7 @@
    <item row="2" column="0">
     <widget class="QLabel" name="label_16">
      <property name="text">
-      <string>Artist</string>
+      <string>Artists</string>
      </property>
     </widget>
    </item>
@@ -84,13 +84,13 @@
        <number>0</number>
       </property>
       <item>
-       <widget class="QLineEdit" name="artist_text"/>
+       <widget class="QLineEdit" name="artists_text"/>
       </item>
       <item>
-       <widget class="QComboBox" name="artist_dropdown"/>
+       <widget class="QComboBox" name="artists_dropdown"/>
       </item>
       <item>
-       <widget class="QListWidget" name="artist_list"/>
+       <widget class="QListWidget" name="artists_list"/>
       </item>
      </layout>
     </widget>
@@ -196,7 +196,7 @@
    <item row="6" column="0">
     <widget class="QLabel" name="label_20">
      <property name="text">
-      <string>Genre</string>
+      <string>Genres</string>
      </property>
     </widget>
    </item>
@@ -225,13 +225,13 @@
        <number>0</number>
       </property>
       <item>
-       <widget class="QLineEdit" name="genre_text"/>
+       <widget class="QLineEdit" name="genres_text"/>
       </item>
       <item>
-       <widget class="QComboBox" name="genre_dropdown"/>
+       <widget class="QComboBox" name="genres_dropdown"/>
       </item>
       <item>
-       <widget class="QListWidget" name="genre_list"/>
+       <widget class="QListWidget" name="genres_list"/>
       </item>
      </layout>
     </widget>
@@ -304,7 +304,7 @@ p, li { white-space: pre-wrap; }
     </widget>
    </item>
    <item row="9" column="0" colspan="2">
-    <widget class="QPushButton" name="pushButton_5">
+    <widget class="QPushButton" name="submit_button">
      <property name="font">
       <font>
        <family>Century Gothic</family>

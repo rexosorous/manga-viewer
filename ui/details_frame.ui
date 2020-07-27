@@ -122,7 +122,7 @@
    <item row="3" column="0">
     <widget class="QLabel" name="label_8">
      <property name="text">
-      <string>Artist</string>
+      <string>Artists</string>
      </property>
     </widget>
    </item>
@@ -151,13 +151,13 @@
        <number>0</number>
       </property>
       <item>
-       <widget class="QLineEdit" name="artist_text"/>
+       <widget class="QLineEdit" name="artists_text"/>
       </item>
       <item>
-       <widget class="QComboBox" name="artist_dropdown"/>
+       <widget class="QComboBox" name="artists_dropdown"/>
       </item>
       <item>
-       <widget class="QListWidget" name="artist_list">
+       <widget class="QListWidget" name="artists_list">
         <property name="maximumSize">
          <size>
           <width>16777215</width>
@@ -240,7 +240,7 @@
    <item row="10" column="0">
     <widget class="QLabel" name="label_10">
      <property name="text">
-      <string>Genre</string>
+      <string>Genres</string>
      </property>
     </widget>
    </item>
@@ -269,13 +269,13 @@
        <number>0</number>
       </property>
       <item>
-       <widget class="QLineEdit" name="genre_text"/>
+       <widget class="QLineEdit" name="genres_text"/>
       </item>
       <item>
-       <widget class="QComboBox" name="genre_dropdown"/>
+       <widget class="QComboBox" name="genres_dropdown"/>
       </item>
       <item>
-       <widget class="QListWidget" name="genre_list">
+       <widget class="QListWidget" name="genres_list">
         <property name="maximumSize">
          <size>
           <width>16777215</width>

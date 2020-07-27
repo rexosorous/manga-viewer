@@ -22,6 +22,19 @@ class MetadataPanel(QFrame, Ui_metadata_panel):
     Attributes:
         metadata (metadata.Data)
         siganls (signals.Signals)
+
+        artists_text (QLineEdit)
+        artists_submit (QPushButton)
+        artists_list (QListWidget)
+        series_text (QLineEdit)
+        series_submit (QPushButton)
+        series_list (QListWidget)
+        genres_text (QLineEdit)
+        genres_submit (QPushButton)
+        genres_list (QListWidget)
+        tags_text (QLineEdit)
+        tags_submit (QPushButton)
+        tags_list (QListWidget)
     """
     def __init__(self, metadata, signals):
         super().__init__()
