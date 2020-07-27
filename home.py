@@ -47,7 +47,7 @@ class Home(QMainWindow, Ui_MainWindow):
 
         open_book_signal (pyqtSignal): triggered to open a book to read
         books ([QFrame]): holds a list of all book frames
-        selected ([QFrame]): holds all currently selected books
+        selected (QFrame): holds the currently selected book
         details_panel (DetailsPanel)
         search_panel (SearchPanel)
         metadata_panel (MetadataPanel)
@@ -62,11 +62,11 @@ class Home(QMainWindow, Ui_MainWindow):
         self.db = database.DBHandler()
         self.directory = directory
         self.books = []
-        self.selected = []
+        self.selected = None
         self.signals = signals.Signals()
 
         self.metadata = metadata.Data(self.db, self.signals)
-        self.details_panel = DetailsPanel()
+        self.details_panel = DetailsPanel(self.metadata, self.signals)
         self.search_panel = SearchPanel()
         self.metadata_panel = MetadataPanel(self.metadata, self.signals)
         self.setup_panels()
@@ -98,7 +98,6 @@ class Home(QMainWindow, Ui_MainWindow):
         self.random_button.clicked.connect(self.random_select)
         self.bookshelf_area.contextMenuEvent = self.context_menu
         self.bookshelf_area.mousePressEvent = self.reset_selected
-        self.bookshelf_area.keyPressEvent = self.keyboard_handler
 
 
 
@@ -109,27 +108,6 @@ class Home(QMainWindow, Ui_MainWindow):
         choice = random.choice(self.books)
         self.highlight(choice)
         self.selected = [choice]
-
-
-
-    def keyboard_handler(self, event):
-        """Unhighlights a book in the gallery when the mouse leaves the area
-
-        Args:
-            event (QKeyEvent): The event that was emitted
-        """
-        if event.key() == QtCore.Qt.Key_A and event.modifiers() == QtCore.Qt.ControlModifier: # control + a
-            # select all books
-            for book in self.books:
-                self.selected.append(book) if book not in self.selected else None
-                self.highlight(book)
-
-        # arrow key navigation
-        # elif event.key() == QtCore.Qt.Key_Up:
-        # elif event.key() == QtCore.Qt.Key_Right:
-        # elif event.key() == QtCore.Qt.Key_Down:
-        # elif event.key() == QtCore.Qt.Key_Left:
-
 
 
 
@@ -199,49 +177,17 @@ class Home(QMainWindow, Ui_MainWindow):
 
 
     def select(self, source, event):
-        """Selects one or multiple books
-
-        If a book is clicked, it selects just that one book.
-        If a book is control + clicked, it selects each book that is clicked this way.
-        If a book is shift + clicked, it selects each book between the current click and the last one.
+        """Selects one of the books only.
 
         Args:
             source (QFrame): The frames that represent the book that was double clicked
             event (QMouseEvent): The event that was emitted
         """
-        if event.button() != 1: # left click
-            return
-
-        if int(event.modifiers()) == 0: # just a normal left click
+        if event.button() == 1: # left click
             self.reset_selected()
-            self.selected.append(source)
+            self.selected = source
             self.highlight(source)
-
-        elif event.modifiers() == QtCore.Qt.ControlModifier: # control + click
-            # individually select multiple books
-            if source in self.selected:
-                self.selected.remove(source)
-                self.unhighlight(source)
-            else:
-                self.selected.append(source)
-                self.highlight(source)
-
-        elif event.modifiers() == QtCore.Qt.ShiftModifier: # shift + click
-            # select all books between the last selection and this new one
-            if not self.selected: # don't do anything if there hasn't already been a first selection
-                return
-
-            last = self.bookshelf.indexOf(self.selected[-1])
-            new = self.bookshelf.indexOf(source)
-
-            if last < new:
-                select_queue = self.books[last:new+1]
-            else:
-                select_queue = self.books[new:last]
-
-            for book in select_queue:
-                self.selected.append(book) if book not in self.selected else None
-                self.highlight(book)
+            self.details_panel.populate(source.id_)
 
 
 
@@ -269,14 +215,15 @@ class Home(QMainWindow, Ui_MainWindow):
 
 
 
-    def unhighlight(self, source, event=None):
+    def unhighlight(self, source, event=None, absolute=False):
         """Unhighlights a book in the gallery when the mouse leaves the area
 
         Args:
             source (QFrame): The frames that represent the book that was double clicked
+            absolute (bool): if true, will unhighlight regardless of if that book is selected
             event (QMouseEvent, optional): The event that was emitted. Unused, but required by PyQt5
         """
-        if source not in self.selected:
+        if source and (source != self.selected or absolute):
             source.setPalette(const.primary_color)
 
 
@@ -287,12 +234,9 @@ class Home(QMainWindow, Ui_MainWindow):
         Args:
             event (QMouseEvent, optional): The event that was emitted
         """
-        if event and event.button() != 1: # left click
-            # don't unhighlight if right clicking
-            return
-
-        while self.selected:
-            self.unhighlight(self.selected.pop())
+        if not event or event.button() == 1: # left click
+            self.unhighlight(self.selected, None, True)
+            self.selected = None
 
 
 

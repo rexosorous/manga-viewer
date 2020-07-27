@@ -28,7 +28,7 @@ class BookSpine(QtWidgets.QFrame):
     def __init__(self, book_id: int, title: str, folder: str):
         super().__init__()
         self.layout = QtWidgets.QVBoxLayout()
-        self.id = book_id
+        self.id_ = book_id
         self.title = title
         self.folder = folder
         self.image = None
