@@ -25,15 +25,17 @@ class BookSpine(QtWidgets.QFrame):
         title (str)
         layout (QVBoxLayout)
     """
-    def __init__(self, title: str, directory: str):
+    def __init__(self, book_id: int, title: str, folder: str):
         super().__init__()
         self.layout = QtWidgets.QVBoxLayout()
+        self.id = book_id
         self.title = title
+        self.folder = folder
         self.image = None
 
         self.setup_frame()
         self.setup_layout()
-        self.setup_img(directory)
+        self.setup_img()
         self.setup_title()
 
     def setup_frame(self):
@@ -51,13 +53,13 @@ class BookSpine(QtWidgets.QFrame):
         self.layout.setSpacing(5)
         self.setLayout(self.layout)
 
-    def setup_img(self, directory):
+    def setup_img(self):
         img = QtWidgets.QLabel()
         img.setFixedWidth(const.spine_img_width)
         img.setFixedHeight(const.spine_img_height)
         img.setAlignment(QtCore.Qt.AlignCenter)
         img.setContentsMargins(0, 0, 0, 0)
-        self.image = QPixmap(f'{directory}/{self.title}/{listdir(f"{directory}/{self.title}/")[0]}')
+        self.image = QPixmap(f'{const.directory}/{self.folder}/{listdir(f"{const.directory}/{self.folder}/")[0]}')
         self.image = self.image.scaledToHeight(const.spine_img_height, QtCore.Qt.SmoothTransformation)
         crop = QtCore.QRect((self.image.width() - const.spine_img_width) / 2, (self.image.height() - const.spine_img_height) / 2, const.spine_img_width, const.spine_img_height)
         self.image = self.image.copy(crop)

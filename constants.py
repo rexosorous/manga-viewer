@@ -1,5 +1,7 @@
 from PyQt5 import QtGui
 
+directory = r'C:\Users\jzlok\programming\manga-viewer\test_library'
+
 background_color = QtGui.QPalette()
 background_color.setColor(QtGui.QPalette.Window, QtGui.QColor.fromRgb(75, 75, 75))
 

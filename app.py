@@ -12,12 +12,10 @@ import home
 import constants as const
 
 
-directory = 'test_library'
-
 QApplication.setAttribute(Qt.AA_EnableHighDpiScaling, True)
 app = QApplication(sys.argv)
 
-home_window = home.Home(directory)
+home_window = home.Home(const.directory)
 home_window.showMaximized()
 reader_window = reader.Reader()
 

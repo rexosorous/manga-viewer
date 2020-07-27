@@ -12,10 +12,10 @@ from PyQt5 import QtCore
 from ui.main_window import Ui_MainWindow
 import spines
 import constants as const
-
 from details_panel import DetailsPanel
 from search_panel import SearchPanel
 from metadata_panel import MetadataPanel
+import database
 
 
 
@@ -24,6 +24,7 @@ TODO
     * implement search bar functionality
     * implement sorting
     * write logic for side panels (editing book details and search filter)
+    * figure out how to handle batch editing
 """
 
 class Home(QMainWindow, Ui_MainWindow):
@@ -56,6 +57,7 @@ class Home(QMainWindow, Ui_MainWindow):
         self.setupUi(self)
 
         # init attributes
+        self.db = database.DBHandler()
         self.directory = directory
         self.books = []
         self.selected = []
@@ -130,9 +132,10 @@ class Home(QMainWindow, Ui_MainWindow):
     def generate_books(self):
         """Creates objects for the books
         """
-        for book in listdir(f'{self.directory}/'):
+        # for book in listdir(f'{self.directory}/'):
+        for book in self.db.get_books():
             # set up frame
-            spine = spines.BookSpine(book, self.directory)
+            spine = spines.BookSpine(book['id'], book['name'], book['directory'])
 
             # add the new frames to the list
             self.books.append(spine)
@@ -247,7 +250,7 @@ class Home(QMainWindow, Ui_MainWindow):
             source (QFrame): The frames that represent the book that was double clicked
             event (QMouseEvent): The event that was emitted. Unused, but required by PyQt5
         """
-        self.open_book_signal.emit(f'{self.directory}/{source.title}')
+        self.open_book_signal.emit(f'{self.directory}/{source.folder}')
 
 
 
