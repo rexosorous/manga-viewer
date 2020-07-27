@@ -10,14 +10,17 @@ from PyQt5.QtCore import Qt
 import reader
 import home
 import constants as const
+import signals
 
 
 QApplication.setAttribute(Qt.AA_EnableHighDpiScaling, True)
 app = QApplication(sys.argv)
 
-home_window = home.Home(const.directory)
+sigs = signals.Signals()
+
+home_window = home.Home(sigs, const.directory)
 home_window.showMaximized()
-reader_window = reader.Reader()
+reader_window = reader.Reader(sigs, )
 
 stack = QStackedWidget()
 stack.addWidget(home_window)
@@ -29,8 +32,8 @@ def open_reader(book: str):
     stack.setCurrentIndex(1)
 def close_reader():
     stack.setCurrentIndex(0)
-home_window.open_book_signal.connect(open_reader)
-reader_window.close_book_signal.connect(close_reader)
+sigs.open_book_signal.connect(open_reader)
+sigs.close_book_signal.connect(close_reader)
 
 stack.setPalette(const.background_color)
 

@@ -6,7 +6,6 @@ import random
 # dependencies
 from PyQt5.QtWidgets import QMainWindow
 from PyQt5.QtWidgets import QMenu
-from PyQt5 import QtCore
 
 # local modules
 from ui.main_window import Ui_MainWindow
@@ -17,7 +16,6 @@ from search_panel import SearchPanel
 from metadata_panel import MetadataPanel
 import database
 import metadata
-import signals
 
 
 
@@ -32,6 +30,10 @@ TODO
 class Home(QMainWindow, Ui_MainWindow):
     """Window used to read pages in the manga
 
+    Args:
+        signals (signals.Signals)
+        directory (str)
+
     Attributes:
         search_bar (QLineEdit)
         search_button (QPushButton): same function as pressing entet in search bar
@@ -45,25 +47,22 @@ class Home(QMainWindow, Ui_MainWindow):
         bookshelf (QGridLayout): the layout where all the books will be displayed
         bookshelf_area (QScrollArea): the whole area where books will be displayed
 
-        open_book_signal (pyqtSignal): triggered to open a book to read
         books ([QFrame]): holds a list of all book frames
         selected (QFrame): holds the currently selected book
         details_panel (DetailsPanel)
         search_panel (SearchPanel)
         metadata_panel (MetadataPanel)
     """
-    open_book_signal = QtCore.pyqtSignal(str)
-
-    def __init__(self, directory):
+    def __init__(self, signals, directory: str):
         super().__init__()
         self.setupUi(self)
 
         # init attributes
-        self.db = database.DBHandler()
+        self.signals = signals
         self.directory = directory
+        self.db = database.DBHandler()
         self.books = []
         self.selected = None
-        self.signals = signals.Signals()
 
         self.metadata = metadata.Data(self.db, self.signals)
         self.details_panel = DetailsPanel(self.metadata, self.signals)
@@ -200,7 +199,7 @@ class Home(QMainWindow, Ui_MainWindow):
             source (QFrame): The frames that represent the book that was double clicked
             event (QMouseEvent): The event that was emitted. Unused, but required by PyQt5
         """
-        self.open_book_signal.emit(f'{self.directory}/{source.folder}')
+        self.signals.open_book_signal.emit(f'{self.directory}/{source.folder}')
 
 
 

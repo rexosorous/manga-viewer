@@ -5,7 +5,6 @@ from os import listdir
 from PyQt5.QtWidgets import QMainWindow
 from PyQt5.QtWidgets import QShortcut
 from PyQt5.QtCore import Qt
-from PyQt5.QtCore import pyqtSignal
 from PyQt5.QtGui import QPixmap
 
 # local modules
@@ -25,8 +24,11 @@ TODO
 class Reader(QMainWindow, Ui_MainWindow):
     """Window used to read pages in the manga
 
+    Args:
+        signals (signals.Signals)
+
     Attributes:
-        close_book_signal (pyqtSignal): emitted to close the reader
+        signals (signals.Signals)
         image (QLabel): label used to load pixmaps onto
         page_counter (QLabel): shows the current page. should be 'Page x/y'
         back_button (QPushButton): goes back to the main window
@@ -37,13 +39,12 @@ class Reader(QMainWindow, Ui_MainWindow):
         current_page (int): the page of the book currently being viewed. 0 for the first page
         size (float): size multiplier. ex: 1 means 100%, 1.1 means 110%, 0.9 means 90%
     """
-    close_book_signal = pyqtSignal()
-
-    def __init__(self):
+    def __init__(self, signals):
         super().__init__()
         self.setupUi(self)
 
         # init attributes
+        self.signals = signals
         self.directory = ''
         self.pages = []
         self.current_page = 0
@@ -146,4 +147,4 @@ class Reader(QMainWindow, Ui_MainWindow):
 
         Called when the back button is pressed or the escape key is pressed
         """
-        self.close_book_signal.emit()
+        self.signals.close_book_signal.emit()
