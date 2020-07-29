@@ -20,7 +20,7 @@ class SearchPanel(QFrame, Ui_search_panel):
         order_number (QSpinBox)
         rating_number (QSpinBox)
         rating_toggle (QCheckBox)
-        genres_text(QLineEdit)
+        genres_text (QLineEdit)
         genres_dropdown (QComboBox)
         genres_list (QListWidget)
         tags_text (QLineEdit)

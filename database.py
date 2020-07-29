@@ -1,8 +1,33 @@
 # standard libraries
 import sqlite3
 
+# dependencies
+from PyQt5.QtWidgets import QListWidgetItem
+
 # local modules
 import exceptions
+
+
+
+class ListItem(QListWidgetItem):
+    """ListWidgetItems used to populate the various metadata lists
+
+    This class allows us to store additional information (namely id) to be used in conjunction with the dbhandler to avoid string matching
+
+    Args:
+        id_ (int): id of the metadata
+        name (str): name of the metadata and what is displayed in the list
+        table (str): one of ['artists', 'series', 'genres', 'tags']
+
+    Attributes:
+        id_ (int)
+        table (str)
+    """
+    def __init__(self, id_: int, name: str, table: str):
+        super().__init__()
+        self.id_ = id_
+        self.table = table
+        self.setText(name)
 
 
 
@@ -118,21 +143,38 @@ class DBHandler:
         """Gets a list for each non-book table
 
         Returns
-            dict: keys are table names, values are sqlite3.conn.cursor.fetchall()
+            {str: [ListItem]}: keys are table names
         """
-        data = dict()
+        data = {
+            'artists': [],
+            'series': [],
+            'genres': [],
+            'tags': []
+        }
 
-        self.db.execute('SELECT * FROM artists')
-        data['artists'] = self.db.fetchall()
+        self.db.execute('SELECT * FROM artists ORDER BY name COLLATE NOCASE')
+        temp = self.db.fetchall()
+        for entry in temp:
+            item = ListItem(entry['id'], entry['name'], 'artists')
+            data['artists'].append(item)
 
-        self.db.execute('SELECT * FROM series')
-        data['series'] = self.db.fetchall()
+        self.db.execute('SELECT * FROM series ORDER BY name COLLATE NOCASE')
+        temp = self.db.fetchall()
+        for entry in temp:
+            item = ListItem(entry['id'], entry['name'], 'series')
+            data['series'].append(item)
 
-        self.db.execute('SELECT * FROM genres')
-        data['genres'] = self.db.fetchall()
+        self.db.execute('SELECT * FROM genres ORDER BY name COLLATE NOCASE')
+        temp = self.db.fetchall()
+        for entry in temp:
+            item = ListItem(entry['id'], entry['name'], 'genres')
+            data['genres'].append(item)
 
-        self.db.execute('SELECT * FROM tags')
-        data['tags'] = self.db.fetchall()
+        self.db.execute('SELECT * FROM tags ORDER BY name COLLATE NOCASE')
+        temp = self.db.fetchall()
+        for entry in temp:
+            item = ListItem(entry['id'], entry['name'], 'tags')
+            data['tags'].append(item)
 
         return data
 
@@ -142,7 +184,7 @@ class DBHandler:
         """Gets a list of every book in the dictionary
 
         Returns:
-            list of dicts
+            [dict]
         """
         self.db.execute('SELECT id, name, directory FROM books')
         return self.db.fetchall()
@@ -165,6 +207,10 @@ class DBHandler:
         """
         self.db.execute('SELECT * FROM books WHERE books.id=?', (book_id,))
         info = self.db.fetchone()
+
+        self.db.execute('SELECT series.name FROM series INNER JOIN books ON series.id=books.series WHERE books.id=?', (book_id,))
+        series = self.db.fetchone()
+        # info['series'] = ('' if not series else series['name'])
 
         self.db.execute('SELECT artists.id FROM artists INNER JOIN books_artists ON artistID=artists.id INNER JOIN books ON bookID=books.id WHERE bookID=?', (book_id,))
         artists = self.db.fetchall()
@@ -196,7 +242,7 @@ class DBHandler:
         Raises:
             exceptions.DuplicateEntry: If the entry that's attempting to be created already exists in the database
         """
-        self.db.execute(f'SELECT * FROM {table} WHERE name="{name}"')
+        self.db.execute(f'SELECT * FROM {table} WHERE name LIKE "{name}"')
         if self.db.fetchone():
             raise exceptions.DuplicateEntry
 

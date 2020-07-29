@@ -16,11 +16,11 @@ class MetadataPanel(QFrame, Ui_metadata_panel):
     """Controls adding and deleting metadata entries.
 
     Args:
-        metadata (metadata.Data)
+        db (database.DBHandler)
         signals (signals.Signals)
 
     Attributes:
-        metadata (metadata.Data)
+        db (database.DBHandler)
         siganls (signals.Signals)
 
         artists_text (QLineEdit)
@@ -36,12 +36,13 @@ class MetadataPanel(QFrame, Ui_metadata_panel):
         tags_submit (QPushButton)
         tags_list (QListWidget)
     """
-    def __init__(self, metadata, signals):
+    def __init__(self, db, signals):
         super().__init__()
         self.setupUi(self)
-        self.metadata = metadata
+        self.db = db
         self.signals = signals
         self.connect_events()
+        self.populate_lists()
 
 
 
@@ -81,8 +82,9 @@ class MetadataPanel(QFrame, Ui_metadata_panel):
         try:
             if text_area.text():
                 table = text_area.objectName()[:-5]
-                self.metadata.create(table, text_area.text())
+                self.db.create_entry(table, text_area.text())
                 text_area.clear()
+                self.signals.update_metadata.emit()
         except exceptions.DuplicateEntry:
             popup = QMessageBox()
             popup.setIcon(QMessageBox.Critical)
@@ -121,23 +123,30 @@ class MetadataPanel(QFrame, Ui_metadata_panel):
                     response = popup.exec_()
 
                     if response == yes:
-                        self.metadata.delete(selected)
+                        self.db.delete_entry(selected.table, selected.id_)
+                        self.signals.update_metadata.emit()
+
+
+
+    def clear_lists(self):
+        self.artists_list.clear()
+        self.series_list.clear()
+        self.genres_list.clear()
+        self.tags_list.clear()
 
 
 
     def populate_lists(self):
         """Populates each of the lists
         """
-        self.artists_list.clear()
-        self.series_list.clear()
-        self.genres_list.clear()
-        self.tags_list.clear()
-        for item in self.metadata.mdata:
-            if item.table == 'artists':
-                self.artists_list.addItem(item)
-            elif item.table == 'series':
-                self.series_list.addItem(item)
-            elif item.table == 'genres':
-                self.genres_list.addItem(item)
-            elif item.table == 'tags':
-                self.tags_list.addItem(item)
+        self.clear_lists()
+        metadata = self.db.get_metadata()
+
+        for item in metadata['artists']:
+            self.artists_list.addItem(item)
+        for item in metadata['series']:
+            self.series_list.addItem(item)
+        for item in metadata['genres']:
+            self.genres_list.addItem(item)
+        for item in metadata['tags']:
+            self.tags_list.addItem(item)

@@ -15,7 +15,6 @@ from details_panel import DetailsPanel
 from search_panel import SearchPanel
 from metadata_panel import MetadataPanel
 import database
-import metadata
 
 
 
@@ -64,10 +63,9 @@ class Home(QMainWindow, Ui_MainWindow):
         self.books = []
         self.selected = None
 
-        self.metadata = metadata.Data(self.db, self.signals)
-        self.details_panel = DetailsPanel(self.metadata, self.signals)
+        self.details_panel = DetailsPanel(self.db, self.signals)
         self.search_panel = SearchPanel()
-        self.metadata_panel = MetadataPanel(self.metadata, self.signals)
+        self.metadata_panel = MetadataPanel(self.db, self.signals)
         self.setup_panels()
 
         self.connect_signals()
@@ -186,7 +184,7 @@ class Home(QMainWindow, Ui_MainWindow):
             self.reset_selected()
             self.selected = source
             self.highlight(source)
-            self.details_panel.populate(source.id_)
+            self.details_panel.populate(source.image, source.id_)
 
 
 
@@ -236,6 +234,7 @@ class Home(QMainWindow, Ui_MainWindow):
         if not event or event.button() == 1: # left click
             self.unhighlight(self.selected, None, True)
             self.selected = None
+            self.details_panel.clear_fields()
 
 
 
