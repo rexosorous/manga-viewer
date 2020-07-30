@@ -3,6 +3,7 @@ from datetime import datetime
 
 # dependencies
 from PyQt5.QtWidgets import QFrame
+from PyQt5.QtCore import QMimeData
 
 # local modules
 from ui.details_frame import Ui_details_panel
@@ -44,23 +45,71 @@ class DetailsPanel(QFrame, Ui_details_panel):
         self.setupUi(self)
         self.db = db
         self.signals = signals
-        self.populate_series()
+        self.populate_metadata()
         self.connect_events()
 
 
 
-    def populate_series(self):
-        return
+    def populate_metadata(self):
+        selected_series = self.series_dropdown.currentText()
 
+        # clear fields
         self.series_dropdown.clear()
+        self.artists_no_list.clear()
+        self.genres_no_list.clear()
+        self.tags_no_list.clear()
+
+        # populate series options
         self.series_dropdown.addItem('')
         for series in self.db.get_metadata()['series']:
-            self.series_dropdown.addItem(series['name'])
+            self.series_dropdown.addItem(series.text(), series.id_)
 
+        # select the correct series
+        self.series_dropdown.setCurrentText(selected_series)
+
+        # populate metadata
+        metadata = self.db.get_metadata()
+        for artist in metadata['artists']:
+            self.artists_no_list.addItem(artist)
+        for genre in metadata['genres']:
+            self.genres_no_list.addItem(genre)
+        for tag in metadata['tags']:
+            self.tags_no_list.addItem(tag)
+
+        # remove any metadata that is in yes_list
+        for pos in reversed(range(self.artists_no_list.count())):
+            if self.artists_no_list.item(pos) in self.get_list_items(self.artists_yes_list):
+                self.artists_no_list.takeItem(pos)
+
+        for pos in reversed(range(self.genres_no_list.count())):
+            if self.genres_no_list.item(pos) in self.get_list_items(self.genres_yes_list):
+                self.genres_no_list.takeItem(pos)
+
+        for pos in reversed(range(self.tags_no_list.count())):
+            if self.tags_no_list.item(pos) in self.get_list_items(self.tags_yes_list):
+                self.tags_no_list.takeItem(pos)
 
 
     def connect_events(self):
-        self.signals.update_metadata.connect(self.populate_series)
+        self.signals.update_metadata.connect(self.populate_metadata)
+
+
+
+    def get_list_items(self, list_widget):
+        """Returns a list of ListItem that are present in a list
+
+        Unfortuantely, PyQt5 does not already have a built in function like this.
+
+        Args:
+            list_widget (QListWidget)
+
+        Returns:
+            [ListItem]
+        """
+        items = []
+        for i in range(list_widget.count()):
+            items.append(list_widget.item(i))
+        return items
 
 
 
@@ -89,39 +138,27 @@ class DetailsPanel(QFrame, Ui_details_panel):
 
 
     def populate(self, cover_img, book_id):
-        return
-
         self.clear_fields()
-        data = self.db.get_book_info(book_id)
+        book_info = self.db.get_book_info(book_id)
 
         self.cover_img.setPixmap(cover_img)
-        self.title_text.setText(data['name'])
-        # self.artists_yes_list.
-        # self.artists_no_list.
-        self.series_dropdown.setCurrentText(data['series'])
-        self.order_number.setValue((0 if not data['series_order'] else data['series_order']))
-        self.rating_number.setValue((0 if not data['rating'] else data['rating']))
-        self.pages_text.setText(str(data['pages']))
-        self.date_text.setText(str(datetime.fromtimestamp(data['date_added'])))
-        # self.genres_yes_list.
-        # self.genres_no_list.
-        # self.tags_yes_list.
-        # self.tags_no_list.
-        self.notes_text.setText(data['notes'])
+        self.title_text.setText(book_info['name'])
+        self.series_dropdown.setCurrentText(book_info['series'].text())
+        self.order_number.setValue((0 if not book_info['series_order'] else book_info['series_order']))
+        self.rating_number.setValue((0 if not book_info['rating'] else book_info['rating']))
+        self.pages_text.setText(str(book_info['pages']))
+        self.date_text.setText(datetime.fromtimestamp(book_info['date_added']).strftime('%B %d, %Y - %I:%M%p'))
+        self.notes_text.setText(book_info['notes'])
 
-        for list_item in self.metadata.mdata:
-            if list_item.table == 'artists':
-                if list_item.id_ in data['artists']:
-                    self.artists_yes_list.addItem(list_item)
-                else:
-                    self.artists_no_list.addItem(list_item)
-            elif list_item.table == 'genres':
-                if list_item.id_ in data['genres']:
-                    self.genres_yes_list.addItem(list_item)
-                else:
-                    self.genres_no_list.addItem(list_item)
-            elif list_item.table == 'tags':
-                if list_item.id_ in data['tags']:
-                    self.tags_yes_list.addItem(list_item)
-                else:
-                    self.tags_no_list.addItem(list_item)
+        for artist in book_info['artists']:
+            self.artists_yes_list.addItem(artist)
+        for genre in book_info['genres']:
+            self.genres_yes_list.addItem(genre)
+        for tag in book_info['tags']:
+            self.tags_yes_list.addItem(tag)
+
+        self.populate_metadata()
+
+
+    def submit(self):
+        self.series_dropdown.currentData()

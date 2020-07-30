@@ -31,6 +31,13 @@ class ListItem(QListWidgetItem):
 
 
 
+    def __eq__(self, compare):
+        if self.id_ == compare.id_:
+            return True
+        return False
+
+
+
 class DBHandler:
     """Controls connection and all interaction with the database.
 
@@ -208,22 +215,27 @@ class DBHandler:
         self.db.execute('SELECT * FROM books WHERE books.id=?', (book_id,))
         info = self.db.fetchone()
 
-        self.db.execute('SELECT series.name FROM series INNER JOIN books ON series.id=books.series WHERE books.id=?', (book_id,))
+        self.db.execute('SELECT series.id, series.name FROM series INNER JOIN books ON series.id=books.series WHERE books.id=?', (book_id,))
         series = self.db.fetchone()
-        # info['series'] = ('' if not series else series['name'])
+        info['series'] = (ListItem(-1, '', 'series') if not series else ListItem(series['id'], series['name'], 'series'))
 
-        self.db.execute('SELECT artists.id FROM artists INNER JOIN books_artists ON artistID=artists.id INNER JOIN books ON bookID=books.id WHERE bookID=?', (book_id,))
+        self.db.execute('SELECT artists.id, artists.name FROM artists INNER JOIN books_artists ON artistID=artists.id INNER JOIN books ON bookID=books.id WHERE bookID=?', (book_id,))
         artists = self.db.fetchall()
+        info['artists'] = []
+        for a in artists:
+            info['artists'].append(ListItem(a['id'], a['name'], 'artists'))
 
-        self.db.execute('SELECT genres.id FROM genres INNER JOIN books_genres ON genreID=genres.id INNER JOIN books ON bookID=books.id WHERE bookID=?', (book_id,))
+        self.db.execute('SELECT genres.id, genres.name FROM genres INNER JOIN books_genres ON genreID=genres.id INNER JOIN books ON bookID=books.id WHERE bookID=?', (book_id,))
         genres = self.db.fetchall()
+        info['genres'] = []
+        for g in genres:
+            info['genres'].append(ListItem(g['id'], g['name'], 'genres'))
 
-        self.db.execute('SELECT tags.id FROM tags INNER JOIN books_tags ON tagID=tags.id INNER JOIN books ON bookID=books.id WHERE bookID=?', (book_id,))
+        self.db.execute('SELECT tags.id, tags.name FROM tags INNER JOIN books_tags ON tagID=tags.id INNER JOIN books ON bookID=books.id WHERE bookID=?', (book_id,))
         tags = self.db.fetchall()
-
-        info['artists'] = [x['id'] for x in artists]
-        info['genres'] = [x['id'] for x in genres]
-        info['tags'] = [x['id'] for x in tags]
+        info['tags'] = []
+        for t in tags:
+            info['tags'].append(ListItem(t['id'], t['name'], 'tags'))
 
         return info
 
@@ -270,7 +282,7 @@ class DBHandler:
             # deletes the series entry and sets any book's series field to NULL
             self.db.execute('UPDATE books SET series=NULL WHERE series=?', (id_,))
             self.db.execute('DELETE FROM series WHERE id=?', (id_,))
-        elif table in ['genres', 'series', 'tags']:
+        elif table in ['artists', 'genres', 'tags']:
             # deletes the entry and all entries related to it in its respective many-to-many through table
             self.db.execute(f'DELETE FROM books_{table} WHERE {table[:-1]}ID={id_}')
             self.db.execute(f'DELETE FROM {table} WHERE id={id_}')
