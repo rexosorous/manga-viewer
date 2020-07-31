@@ -85,6 +85,11 @@ class BookSpine(QtWidgets.QFrame):
         self.title = title
         self.title_label.setText(self.title)
 
+    def __eq__(self, compare):
+        if isinstance(compare, BookSpine) and self.id_ == compare.id_:
+            return True
+        return False
+
 
 
 class BlankSpine(QtWidgets.QFrame):

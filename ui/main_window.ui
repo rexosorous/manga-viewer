@@ -233,17 +233,42 @@
          </property>
          <item>
           <property name="text">
-           <string>Alphabetically</string>
+           <string>Title (A to Z)</string>
           </property>
          </item>
          <item>
           <property name="text">
-           <string>Rating</string>
+           <string>Title (Z to A)</string>
           </property>
          </item>
          <item>
           <property name="text">
-           <string>Pages</string>
+           <string>Rating (0 to 10)</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>Rating (10 to 0)</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>Pages (low to high)</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>Pages (high to low)</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>Date Added (old to new)</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>Date Added (new to old)</string>
           </property>
          </item>
          <item>

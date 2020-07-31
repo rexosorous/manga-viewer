@@ -187,13 +187,13 @@ class DBHandler:
 
 
 
-    def get_books(self):
+    def get_books(self, search, sort):
         """Gets a list of every book in the dictionary
 
         Returns:
             [dict]
         """
-        self.db.execute('SELECT id, name, directory FROM books')
+        self.db.execute(f'SELECT id, name, directory FROM books ORDER BY {sort}')
         return self.db.fetchall()
 
 
