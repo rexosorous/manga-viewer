@@ -1,8 +1,10 @@
 # standard libraries
 from datetime import datetime
+from functools import partial
 
 # dependencies
 from PyQt5.QtWidgets import QFrame
+from PyQt5.QtWidgets import QMessageBox
 from PyQt5.QtCore import QMimeData
 
 # local modules
@@ -16,6 +18,7 @@ class DetailsPanel(QFrame, Ui_details_panel):
     Args:
         db (database.DBHandler)
         signals (signals.Signals)
+        book_id (int): ID of the book that this panel is displaying info about. -1 is none selected
 
     Attributes:
         cover_img (QLabel)
@@ -45,6 +48,7 @@ class DetailsPanel(QFrame, Ui_details_panel):
         self.setupUi(self)
         self.db = db
         self.signals = signals
+        self.book_id = -1
         self.populate_metadata()
         self.connect_events()
 
@@ -90,8 +94,16 @@ class DetailsPanel(QFrame, Ui_details_panel):
                 self.tags_no_list.takeItem(pos)
 
 
+
     def connect_events(self):
         self.signals.update_metadata.connect(self.populate_metadata)
+        self.artists_yes_list.itemDoubleClicked.connect(partial(self.move_item, self.artists_yes_list))
+        self.artists_no_list.itemDoubleClicked.connect(partial(self.move_item, self.artists_no_list))
+        self.genres_yes_list.itemDoubleClicked.connect(partial(self.move_item, self.genres_yes_list))
+        self.genres_no_list.itemDoubleClicked.connect(partial(self.move_item, self.genres_no_list))
+        self.tags_yes_list.itemDoubleClicked.connect(partial(self.move_item, self.tags_yes_list))
+        self.tags_no_list.itemDoubleClicked.connect(partial(self.move_item, self.tags_no_list))
+        self.submit_button.clicked.connect(self.submit)
 
 
 
@@ -135,9 +147,12 @@ class DetailsPanel(QFrame, Ui_details_panel):
         self.tags_no_list.clear()
         self.notes_text.clear()
 
+        self.populate_metadata()
+
 
 
     def populate(self, cover_img, book_id):
+        self.book_id = book_id
         self.clear_fields()
         book_info = self.db.get_book_info(book_id)
 
@@ -160,5 +175,74 @@ class DetailsPanel(QFrame, Ui_details_panel):
         self.populate_metadata()
 
 
+
+    def move_item(self, source, item):
+        """When an item is double clicked, remove it from that list and place it in the opposite list (yes to no and vice versa)
+
+        Args:
+            source (QListWidget)
+            item (ListItem)
+        """
+        list_picker = {
+            'artists_yes_list': self.artists_no_list,
+            'artists_no_list': self.artists_yes_list,
+            'genres_yes_list': self.genres_no_list,
+            'genres_no_list': self.genres_yes_list,
+            'tags_yes_list': self.tags_no_list,
+            'tags_no_list': self.tags_yes_list
+        }
+
+        move = source.takeItem(source.row(item))
+        list_picker[source.objectName()].addItem(move)
+
+
+
     def submit(self):
-        self.series_dropdown.currentData()
+        """Updates a book with new information.
+        """
+        # make sure a book is selected
+        if self.book_id < 0:
+            return
+
+        # confirm with user that they actually want to edit the book
+        popup = QMessageBox()
+        popup.setIcon(QMessageBox.Warning)
+        popup.setWindowTitle('Confirm')
+        popup.setText(f'Are you sure you want to update this manga\'s metadata?')
+        popup.setStandardButtons((yes := QMessageBox.Yes) | QMessageBox.Cancel)
+        response = popup.exec_()
+
+        if response == yes:
+            # collect data
+            data = dict()
+            data['id'] = self.book_id
+            data['title'] = self.title_text.text()
+            data['series'] = self.series_dropdown.currentData()
+            data['series_order'] = (self.order_number.value() if self.order_number.value() else None)
+            data['rating'] = (self.rating_number.value() if self.rating_number.value() else None)
+            data['notes'] = (self.notes_text.toPlainText() if self.notes_text.toPlainText() else None)
+            data['artists'] = [x.id_ for x in self.get_list_items(self.artists_yes_list)]
+            data['genres'] = [x.id_ for x in self.get_list_items(self.genres_yes_list)]
+            data['tags'] = [x.id_ for x in self.get_list_items(self.tags_yes_list)]
+
+            # make sure required field, title, is filled
+            if not data['title']:
+                popup = QMessageBox()
+                popup.setIcon(QMessageBox.Critical)
+                popup.setWindowTitle('Error')
+                popup.setText('Missing title!')
+                popup.setStandardButtons(QMessageBox.Close)
+                popup.exec_()
+                return
+
+            # update info
+            self.db.update_book(data)
+            self.signals.update_spines.emit()
+
+            # inform user of successful operation
+            popup = QMessageBox()
+            popup.setIcon(QMessageBox.Information)
+            popup.setWindowTitle('Success')
+            popup.setText(f'{data["title"]} updated successfully')
+            popup.setStandardButtons(QMessageBox.Close)
+            popup.exec_()

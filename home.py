@@ -95,6 +95,7 @@ class Home(QMainWindow, Ui_MainWindow):
         self.random_button.clicked.connect(self.random_select)
         self.bookshelf_area.contextMenuEvent = self.context_menu
         self.bookshelf_area.mousePressEvent = self.reset_selected
+        self.signals.update_spines.connect(self.update_gallery)
 
 
 
@@ -173,6 +174,22 @@ class Home(QMainWindow, Ui_MainWindow):
 
 
 
+    def update_gallery(self):
+        """Updates all spines in the gallery when users change a book's details.
+
+        This is to ensure the title displayed is always accurate.
+        """
+        for i in reversed(range(self.bookshelf.count())):
+            spine = self.bookshelf.itemAt(i).widget()
+            if isinstance(spine, spines.BlankSpine):
+                # don't update blank spines
+                continue
+
+            info = self.db.get_book_info(spine.id_)
+            spine.update_title(info['name'])
+
+
+
     def select(self, source, event):
         """Selects one of the books only.
 
@@ -235,6 +252,7 @@ class Home(QMainWindow, Ui_MainWindow):
             self.unhighlight(self.selected, None, True)
             self.selected = None
             self.details_panel.clear_fields()
+            self.details_panel.book_id = -1
 
 
 

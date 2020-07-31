@@ -18,3 +18,4 @@ class Signals(QObject):
     open_book_signal = pyqtSignal(str)
     close_book_signal = pyqtSignal()
     update_metadata = pyqtSignal()
+    update_spines = pyqtSignal()

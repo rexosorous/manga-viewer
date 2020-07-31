@@ -67,19 +67,23 @@ class BookSpine(QtWidgets.QFrame):
         self.layout.addWidget(img)
 
     def setup_title(self):
-        title_label = QtWidgets.QLabel()
-        title_label.setFixedWidth(const.spine_img_width)
-        title_label.setFixedHeight(50)
-        title_label.setAlignment(QtCore.Qt.AlignCenter)
-        title_label.setContentsMargins(0, 0, 0, 0)
-        title_label.setPalette(const.secondary_color)
-        title_label.setAutoFillBackground(True)
-        title_label.setWordWrap(True)
-        title_label.setText(self.title)
+        self.title_label = QtWidgets.QLabel()
+        self.title_label.setFixedWidth(const.spine_img_width)
+        self.title_label.setFixedHeight(50)
+        self.title_label.setAlignment(QtCore.Qt.AlignCenter)
+        self.title_label.setContentsMargins(0, 0, 0, 0)
+        self.title_label.setPalette(const.secondary_color)
+        self.title_label.setAutoFillBackground(True)
+        self.title_label.setWordWrap(True)
+        self.title_label.setText(self.title)
         titlefont = QFont()
         titlefont.setPointSize(14)
-        title_label.setFont(titlefont)
-        self.layout.addWidget(title_label)
+        self.title_label.setFont(titlefont)
+        self.layout.addWidget(self.title_label)
+
+    def update_title(self, title: str):
+        self.title = title
+        self.title_label.setText(self.title)
 
 
 

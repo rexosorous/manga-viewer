@@ -288,3 +288,22 @@ class DBHandler:
             self.db.execute(f'DELETE FROM {table} WHERE id={id_}')
 
         self.conn.commit()
+
+
+
+    def update_book(self, data: dict):
+        self.db.execute('UPDATE books SET name=?, series=?, series_order=?, rating=?, notes=? WHERE id=?', (data['title'], data['series'], data['series_order'], data['rating'], data['notes'], data['id']))
+
+        self.db.execute('DELETE FROM books_artists WHERE bookID=?', (data['id'],))
+        for artist in data['artists']:
+            self.db.execute('INSERT INTO books_artists VALUES(?, ?)', (data['id'], artist))
+
+        self.db.execute('DELETE FROM books_genres WHERE bookID=?', (data['id'],))
+        for genre in data['genres']:
+            self.db.execute('INSERT INTO books_genres VALUES(?, ?)', (data['id'], genre))
+
+        self.db.execute('DELETE FROM books_tags WHERE bookID=?', (data['id'],))
+        for tag in data['tags']:
+            self.db.execute('INSERT INTO books_tags VALUES(?, ?)', (data['id'], tag))
+
+        self.conn.commit()
