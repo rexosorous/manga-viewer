@@ -17,5 +17,6 @@ class Signals(QObject):
     """
     open_book_signal = pyqtSignal(str)
     close_book_signal = pyqtSignal()
+    filter_signal = pyqtSignal(str)
     update_metadata = pyqtSignal()
     update_spines = pyqtSignal()

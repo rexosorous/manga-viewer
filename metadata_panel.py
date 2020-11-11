@@ -119,12 +119,14 @@ class MetadataPanel(QFrame, Ui_metadata_panel):
                     popup.setIcon(QMessageBox.Warning)
                     popup.setWindowTitle('Confirm')
                     popup.setText(f'Are you sure you want to delete {selected.text()}?')
-                    popup.setStandardButtons((yes := QMessageBox.Yes) | QMessageBox.Cancel)
+                    popup.setStandardButtons(QMessageBox.Yes | (no := QMessageBox.Cancel))
                     response = popup.exec_()
 
-                    if response == yes:
-                        self.db.delete_entry(selected.table, selected.id_)
-                        self.signals.update_metadata.emit()
+                    if response == no:
+                        return
+
+                    self.db.delete_entry(selected.table, selected.id_)
+                    self.signals.update_metadata.emit()
 
 
 

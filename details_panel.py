@@ -209,40 +209,42 @@ class DetailsPanel(QFrame, Ui_details_panel):
         popup.setIcon(QMessageBox.Warning)
         popup.setWindowTitle('Confirm')
         popup.setText(f'Are you sure you want to update this manga\'s metadata?')
-        popup.setStandardButtons((yes := QMessageBox.Yes) | QMessageBox.Cancel)
+        popup.setStandardButtons(QMessageBox.Yes | (no := QMessageBox.Cancel))
         response = popup.exec_()
 
-        if response == yes:
-            # collect data
-            data = dict()
-            data['id'] = self.book_id
-            data['title'] = self.title_text.text()
-            data['series'] = self.series_dropdown.currentData()
-            data['series_order'] = (self.order_number.value() if self.order_number.value() else None)
-            data['rating'] = (self.rating_number.value() if self.rating_number.value() else None)
-            data['notes'] = (self.notes_text.toPlainText() if self.notes_text.toPlainText() else None)
-            data['artists'] = [x.id_ for x in self.get_list_items(self.artists_yes_list)]
-            data['genres'] = [x.id_ for x in self.get_list_items(self.genres_yes_list)]
-            data['tags'] = [x.id_ for x in self.get_list_items(self.tags_yes_list)]
+        if response == no:
+            return
 
-            # make sure required field, title, is filled
-            if not data['title']:
-                popup = QMessageBox()
-                popup.setIcon(QMessageBox.Critical)
-                popup.setWindowTitle('Error')
-                popup.setText('Missing title!')
-                popup.setStandardButtons(QMessageBox.Close)
-                popup.exec_()
-                return
+        # collect data
+        data = dict()
+        data['id'] = self.book_id
+        data['title'] = self.title_text.text()
+        data['series'] = self.series_dropdown.currentData()
+        data['series_order'] = (self.order_number.value() if self.order_number.value() else None)
+        data['rating'] = (self.rating_number.value() if self.rating_number.value() else None)
+        data['notes'] = (self.notes_text.toPlainText() if self.notes_text.toPlainText() else None)
+        data['artists'] = [x.id_ for x in self.get_list_items(self.artists_yes_list)]
+        data['genres'] = [x.id_ for x in self.get_list_items(self.genres_yes_list)]
+        data['tags'] = [x.id_ for x in self.get_list_items(self.tags_yes_list)]
 
-            # update info
-            self.db.update_book(data)
-            self.signals.update_spines.emit()
-
-            # inform user of successful operation
+        # make sure required field, title, is filled
+        if not data['title']:
             popup = QMessageBox()
-            popup.setIcon(QMessageBox.Information)
-            popup.setWindowTitle('Success')
-            popup.setText(f'{data["title"]} updated successfully')
+            popup.setIcon(QMessageBox.Critical)
+            popup.setWindowTitle('Error')
+            popup.setText('Missing title!')
             popup.setStandardButtons(QMessageBox.Close)
             popup.exec_()
+            return
+
+        # update info
+        self.db.update_book(data)
+        self.signals.update_spines.emit()
+
+        # inform user of successful operation
+        popup = QMessageBox()
+        popup.setIcon(QMessageBox.Information)
+        popup.setWindowTitle('Success')
+        popup.setText(f'{data["title"]} updated successfully')
+        popup.setStandardButtons(QMessageBox.Close)
+        popup.exec_()

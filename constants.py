@@ -14,6 +14,30 @@ secondary_color.setColor(QtGui.QPalette.Window, QtGui.QColor.fromRgb(125, 125, 1
 highlight_color = QtGui.QPalette()
 highlight_color.setColor(QtGui.QPalette.Window, QtGui.QColor.fromRgb(230, 230, 0))
 
+
+FILTER_NONE = 0
+FILTER_AND = 1
+FILTER_NOT = 2
+FILTER_OR = 3
+
+and_color = QtGui.QColor.fromRgb(0, 255, 0)
+and_palette = QtGui.QPalette()
+and_palette.setColor(QtGui.QPalette.WindowText, and_color)
+
+not_color = QtGui.QColor.fromRgb(255, 0, 0)
+not_palette = QtGui.QPalette()
+not_palette.setColor(QtGui.QPalette.WindowText, not_color)
+
+or_color = QtGui.QColor.fromRgb(0, 255, 255)
+or_palette = QtGui.QPalette()
+or_palette.setColor(QtGui.QPalette.WindowText, or_color)
+
+cleanse_color = QtGui.QColor.fromRgb(185, 185, 185)
+cleanse_palette = QtGui.QPalette()
+cleanse_palette.setColor(QtGui.QPalette.WindowText, cleanse_color)
+
+no_color = QtGui.QBrush()
+
 spine_img_width = 280
 spine_img_height = 400
 

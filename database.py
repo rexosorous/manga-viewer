@@ -5,6 +5,7 @@ import sqlite3
 from PyQt5.QtWidgets import QListWidgetItem
 
 # local modules
+import constants as const
 import exceptions
 
 
@@ -27,6 +28,7 @@ class ListItem(QListWidgetItem):
         super().__init__()
         self.id_ = id_
         self.table = table
+        self.filter_type = const.FILTER_NONE
         self.setText(name)
 
 
@@ -187,13 +189,13 @@ class DBHandler:
 
 
 
-    def get_books(self, search, sort):
+    def get_books(self, query):
         """Gets a list of every book in the dictionary
 
         Returns:
             [dict]
         """
-        self.db.execute(f'SELECT id, name, directory FROM books ORDER BY {sort}')
+        self.db.execute(query)
         return self.db.fetchall()
 
 
