@@ -2,10 +2,10 @@
 from os import listdir
 
 # dependencies
-from PyQt5.QtWidgets import QMainWindow
-from PyQt5.QtWidgets import QShortcut
 from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QPixmap
+from PyQt5.QtWidgets import QMainWindow
+from PyQt5.QtWidgets import QShortcut
 
 # local modules
 from ui.reader_window import Ui_MainWindow
@@ -64,6 +64,9 @@ class Reader(QMainWindow, Ui_MainWindow):
 
     def open_book(self, book_directory):
         """Loads a book's pages
+
+        Args:
+            book_directory (str): the relative directory to find the book
         """
         self.directory = book_directory
         self.pages = self.get_imgs()

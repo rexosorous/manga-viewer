@@ -7,8 +7,8 @@ from PyQt5.QtWidgets import QMenu
 from PyQt5.QtWidgets import QMessageBox
 
 # local modules
-from ui.metadata_frame import Ui_metadata_panel
 import exceptions
+from ui.metadata_frame import Ui_metadata_panel
 
 
 

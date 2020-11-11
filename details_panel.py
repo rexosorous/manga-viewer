@@ -3,9 +3,9 @@ from datetime import datetime
 from functools import partial
 
 # dependencies
+from PyQt5.QtCore import QMimeData
 from PyQt5.QtWidgets import QFrame
 from PyQt5.QtWidgets import QMessageBox
-from PyQt5.QtCore import QMimeData
 
 # local modules
 from ui.details_frame import Ui_details_panel

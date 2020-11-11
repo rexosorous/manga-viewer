@@ -2,10 +2,10 @@
 from os import listdir
 
 # dependencies
+from PyQt5 import QtCore
 from PyQt5 import QtWidgets
 from PyQt5.QtGui import QPixmap
 from PyQt5.QtGui import QFont
-from PyQt5 import QtCore
 
 # local modules
 import constants as const
@@ -18,8 +18,9 @@ class BookSpine(QtWidgets.QFrame):
     Done this way partially to abstract away the frame creation, but mainly to hold instance variables
 
     Args:
+        book_id (int)
         title (str): the title of the book
-        directory (str): the base directory of all the books. NOT the directory of this specific book.
+        folder (str): the base directory of all the books. NOT the directory of this specific book.
 
     Attributes:
         title (str)

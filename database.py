@@ -190,7 +190,13 @@ class DBHandler:
 
 
     def get_books(self, query):
-        """Gets a list of every book in the dictionary
+        """Gets a list of books that satisfy the query
+
+        As it is now this just executes whatever query is sent to it and the queries to get books based on certain
+        search filters are built by search_panel. I may come back and abstrac that process back into here.
+
+        Args:
+            query (str): a sqlite3 query
 
         Returns:
             [dict]
@@ -294,6 +300,14 @@ class DBHandler:
 
 
     def update_book(self, data: dict):
+        """Updates a book's data
+
+        This basically cleans the book's DB entry and rebuilds it with the specific info.
+        Instead of editing only the parts we changed, we re-write the whole DB entry.
+
+        Args:
+            data (dict)
+        """
         self.db.execute('UPDATE books SET name=?, series=?, series_order=?, rating=?, notes=? WHERE id=?', (data['title'], data['series'], data['series_order'], data['rating'], data['notes'], data['id']))
 
         self.db.execute('DELETE FROM books_artists WHERE bookID=?', (data['id'],))
