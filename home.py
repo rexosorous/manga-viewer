@@ -82,7 +82,7 @@ class Home(QMainWindow, Ui_MainWindow):
         self.details_button.clicked.connect(lambda : [self.details_panel.setVisible(True), self.search_panel.setVisible(False), self.metadata_panel.setVisible(False)])
         self.advanced_search_button.clicked.connect(lambda : [self.details_panel.setVisible(False), self.search_panel.setVisible(True), self.metadata_panel.setVisible(False)])
         self.metadata_button.clicked.connect(lambda : [self.details_panel.setVisible(False), self.search_panel.setVisible(False), self.metadata_panel.setVisible(True)])
-        self.sort_by.textActivated.connect(self.populate_gallery)
+        self.sort_by.textActivated.connect(self.sort_gallery)
         self.random_button.clicked.connect(self.random_select)
         self.bookshelf_area.contextMenuEvent = self.context_menu
         self.bookshelf_area.mousePressEvent = self.reset_selected
@@ -143,8 +143,6 @@ class Home(QMainWindow, Ui_MainWindow):
             query (str, optional): sqlite3 query to filter by
         """
         self.clear_gallery()
-
-        search = None # gather search settings
         self.generate_books(query, self.sort_by.currentText())
 
         row_pos = 0
@@ -174,6 +172,17 @@ class Home(QMainWindow, Ui_MainWindow):
             self.select(new_select)
         else:
             self.reset_selected()
+
+
+
+    def sort_gallery(self, sort_text):
+        """Re-sorts the books in the gallery when self.sort_by is changed
+        """
+        if not self.books: # sorting books when there are no books causes a crash
+            return
+        where = ' OR '.join(['id='+str(x.id_) for x in self.books])
+        query = 'SELECT id, name, directory FROM books WHERE ' + where
+        self.populate_gallery(query)
 
 
 

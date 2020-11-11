@@ -207,7 +207,7 @@ class SearchPanel(QFrame, Ui_search_panel):
             item = self.artists_list.item(i)
             if item.filter_type == 0:
                 continue
-            list_filters[item.filter_type].append(f'artists.ID={item.id_}')
+            list_filters[item.filter_type].append(f'artists.id={item.id_}')
 
         for i in range(self.series_list.count()):
             item = self.series_list.item(i)
@@ -219,13 +219,13 @@ class SearchPanel(QFrame, Ui_search_panel):
             item = self.genres_list.item(i)
             if item.filter_type == 0:
                 continue
-            list_filters[item.filter_type].append(f'genres.ID={item.id_}')
+            list_filters[item.filter_type].append(f'genres.id={item.id_}')
 
         for i in range(self.tags_list.count()):
             item = self.tags_list.item(i)
             if item.filter_type == 0:
                 continue
-            list_filters[item.filter_type].append(f'tags.ID={item.id_}')
+            list_filters[item.filter_type].append(f'tags.id={item.id_}')
 
         list_filters[const.FILTER_AND] = ' AND '.join(list_filters[const.FILTER_AND])
         list_filters[const.FILTER_NOT] = ' AND '.join(list_filters[const.FILTER_NOT])
@@ -244,19 +244,19 @@ class SearchPanel(QFrame, Ui_search_panel):
             SELECT DISTINCT books.id, books.name, books.directory
             FROM books
             LEFT JOIN books_artists
-            ON books_artists.bookID=books.ID
+            ON books_artists.bookID=books.id
             LEFT JOIN artists
-            ON books_artists.artistID=artists.ID
+            ON books_artists.artistID=artists.id
             LEFT JOIN series
-            ON series.ID=books.series
+            ON series.id=books.series
             LEFT JOIN books_genres
-            ON books_genres.bookID=books.ID
+            ON books_genres.bookID=books.id
             LEFT JOIN genres
-            ON books_genres.genreID=genres.ID
+            ON books_genres.genreID=genres.id
             LEFT JOIN books_tags
-            ON books_tags.bookID=books.ID
+            ON books_tags.bookID=books.id
             LEFT JOIN tags
-            ON books_tags.tagID=tags.ID
+            ON books_tags.tagID=tags.id
             WHERE ''' + where
 
         if not where:
