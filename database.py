@@ -189,19 +189,112 @@ class DBHandler:
 
 
 
-    def get_books(self, query):
-        """Gets a list of books that satisfy the query
+    def get_books(self, filters, sort_by):
+        """Gets a list of books that satisfy the search filters
 
-        As it is now this just executes whatever query is sent to it and the queries to get books based on certain
-        search filters are built by search_panel. I may come back and abstrac that process back into here.
+        Dynamically builds a sqlite3 query string based on the information provided by filters
 
         Args:
-            query (str): a sqlite3 query
+            filters (dict, list, optional): filters to filter by (either a dict from search panel or a list from sort_gallery)
+            sort_by (int): the way the books are to be sorted
 
         Returns:
             [dict]
         """
-        self.db.execute(query)
+        sort_query = {
+            const.ALPHA_ASC: 'books.name COLLATE NOCASE ASC',
+            const.ALPHA_DESC: 'books.name COLLATE NOCASE DESC',
+            const.RATING_ASC: 'books.rating ASC',
+            const.RATING_DESC: 'books.rating DESC',
+            const.PAGES_ASC: 'books.pages ASC',
+            const.PAGES_DESC: 'books.pages DESC',
+            const.DATE_ASC: 'books.date_added ASC',
+            const.DATE_DESC: 'books.date_added DESC',
+            const.RAND: 'random()'
+        }
+
+        if not filters: # if filters are not sent (like during startup), just give a list of all the books back
+            self.db.execute('SELECT books.id, books.name, books.directory FROM books ORDER BY ' + sort_query[sort_by])
+            return self.db.fetchall()
+
+        if isinstance(filters, list): # if we're re-sorting ONLY the books that are displayed in the gallery
+            displayed_IDs = ' OR '.join([f'books.id={x}' for x in filters])
+            self.db.execute('SELECT books.id, books.name, books.directory FROM books WHERE ' + displayed_IDs + ' ORDER BY ' + sort_query[sort_by])
+            return self.db.fetchall()
+
+
+        # shorthanding the filter keys
+        and_data = filters[const.FILTER_AND]
+        not_data = filters[const.FILTER_NOT]
+        or_data = filters[const.FILTER_OR]
+
+        and_block = []
+        not_block = []
+        or_block = []
+        count_block = []
+
+        # AND SIMPLE
+        and_block.append(f'(books.name LIKE "%{and_data["title"]}%" OR books.alt_name LIKE "%{and_data["title"]}%")') if and_data['title'] else None
+        and_block.append(f'books.series_order={and_data["order"]}') if and_data['order'] else None
+        and_block.append(f'books.rating={and_data["rating"][0]}') if and_data['rating'][0] and and_data['rating'][1] == 0 else None
+        and_block.append(f'books.rating>={and_data["rating"][0]}') if and_data['rating'][0] and and_data['rating'][1] == 2 else None
+        and_block.append(f'books.pages>={and_data["pages_low"]}') if and_data['pages_low'] else None
+        and_block.append(f'books.pages<={and_data["pages_high"]}') if and_data['pages_high'] else None
+        and_block.append(f'books.date_added>={and_data["date_low"]}') if and_data['date_low'] > -6857193600 else None
+        and_block.append(f'books.date_added<={and_data["date_high"]}') if and_data['date_high'] > -6857193600 else None
+
+        # AND COMPLEX
+        and_block.append('(' + '\n\tOR '.join([f'artistID={id_}' for id_ in and_data['artists']]) + ')') if and_data['artists'] else None
+        and_block.append('(' + '\n\tOR '.join([f'books.series={id_}' for id_ in and_data['series']]) + ')') if and_data['series'] else None
+        and_block.append('(' + '\n\tOR '.join([f'genreID={id_}' for id_ in and_data['genres']]) + ')') if and_data['genres'] else None
+        and_block.append('(' + '\n\tOR '.join([f'tagID={id_}' for id_ in and_data['tags']]) + ')') if and_data['tags'] else None
+
+        # NOT
+        not_block += [f'artistID={id_}' for id_ in not_data['artists']]
+        not_block += [f'books.series={id_}' for id_ in not_data['series']]
+        not_block += [f'genreID={id_}' for id_ in not_data['genres']]
+        not_block += [f'tagID={id_}' for id_ in not_data['tags']]
+
+        # OR
+        or_block += [f'artistID={id_}' for id_ in or_data['artists']]
+        or_block += [f'books.series={id_}' for id_ in or_data['series']]
+        or_block += [f'genreID={id_}' for id_ in or_data['genres']]
+        or_block += [f'tagID={id_}' for id_ in or_data['tags']]
+
+        # count
+        count_block.append(f'COUNT(DISTINCT artistID)={len(and_data["artists"])}') if len(and_data['artists']) > 1 else None
+        count_block.append(f'COUNT(DISTINCT books.series)={len(and_data["series"])}') if len(and_data['series']) > 1 else None
+        count_block.append(f'COUNT(DISTINCT genreID)={len(and_data["genres"])}') if len(and_data['genres']) > 1 else None
+        count_block.append(f'COUNT(DISTINCT tagID)={len(and_data["tags"])}') if len(and_data['tags']) > 1 else None
+
+
+        # check if there are even any search filters
+        if not and_block and not not_block and not or_block:
+            self.db.execute('SELECT books.id, books.name, books.directory FROM books ORDER BY ' + sort_query[sort_by])
+            return self.db.fetchall()
+
+
+        # start building the query string
+        base_query = ('SELECT DISTINCT books.id, books.name, books.directory FROM books\n'
+        '\tLEFT JOIN books_artists ON books_artists.bookID=books.id\n'
+        '\tLEFT JOIN books_genres ON books_genres.bookID=books.id\n'
+        '\tLEFT JOIN books_tags ON books_tags.bookID=books.id')
+
+        and_string = '\nWHERE\n\t' + '\n\tAND '.join(and_block) if and_block else ''
+        count_string = '\nGROUP BY books.id\nHAVING\n\t' + '\n\tAND '.join(count_block) if count_block else ''
+        not_string = '\nEXCEPT\n\t' + base_query.replace('\n', '\n\t') + '\n\tWHERE\n\t\t' + '\n\t\tOR '.join(not_block) if not_block else ''
+        or_string = '\n\tOR '.join(or_block)
+
+        query = base_query + and_string + count_string + not_string
+        query = ('SELECT DISTINCT books.id, books.name, books.directory FROM books\n'
+        '\tINNER JOIN\n\t\t(' + query.replace("\n", "\n\t\t") + ') AS temp ON temp.id=books.id\n'
+        '\tLEFT JOIN books_artists ON books_artists.bookID=books.id\n'
+        '\tLEFT JOIN books_genres ON books_genres.bookID=books.id\n'
+        '\tLEFT JOIN books_tags ON books_tags.bookID=books.id\n'
+        'WHERE\n\t' + or_string) if or_block else query
+        query = query + '\nORDER BY ' + sort_query[sort_by]
+
+        self.db.execute(query + sort_by)
         return self.db.fetchall()
 
 

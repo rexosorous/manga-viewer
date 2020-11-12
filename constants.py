@@ -43,3 +43,14 @@ spine_img_height = 400
 
 spine_width = 296
 spine_height = 471
+
+
+ALPHA_ASC = 0
+ALPHA_DESC = 1
+RATING_ASC = 2
+RATING_DESC = 3
+PAGES_ASC = 4
+PAGES_DESC = 5
+DATE_ASC = 6
+DATE_DESC = 7
+RAND = 8
