@@ -28,7 +28,7 @@ class ListItem(QListWidgetItem):
         super().__init__()
         self.id_ = id_
         self.table = table
-        self.filter_type = const.FILTER_NONE
+        self.filter_type = const.Filters.NONE
         self.setText(name)
 
 
@@ -202,15 +202,15 @@ class DBHandler:
             [dict]
         """
         sort_query = {
-            const.ALPHA_ASC: 'books.name COLLATE NOCASE ASC',
-            const.ALPHA_DESC: 'books.name COLLATE NOCASE DESC',
-            const.RATING_ASC: 'books.rating ASC',
-            const.RATING_DESC: 'books.rating DESC',
-            const.PAGES_ASC: 'books.pages ASC',
-            const.PAGES_DESC: 'books.pages DESC',
-            const.DATE_ASC: 'books.date_added ASC',
-            const.DATE_DESC: 'books.date_added DESC',
-            const.RAND: 'random()'
+            const.Sort.ALPHA_ASC: 'books.name COLLATE NOCASE ASC',
+            const.Sort.ALPHA_DESC: 'books.name COLLATE NOCASE DESC',
+            const.Sort.RATING_ASC: 'books.rating ASC',
+            const.Sort.RATING_DESC: 'books.rating DESC',
+            const.Sort.PAGES_ASC: 'books.pages ASC',
+            const.Sort.PAGES_DESC: 'books.pages DESC',
+            const.Sort.DATE_ASC: 'books.date_added ASC',
+            const.Sort.DATE_DESC: 'books.date_added DESC',
+            const.Sort.RAND: 'random()'
         }
 
         if not filters: # if filters are not sent (like during startup), just give a list of all the books back
@@ -224,9 +224,9 @@ class DBHandler:
 
 
         # shorthanding the filter keys
-        and_data = filters[const.FILTER_AND]
-        not_data = filters[const.FILTER_NOT]
-        or_data = filters[const.FILTER_OR]
+        and_data = filters[const.Filters.AND]
+        not_data = filters[const.Filters.NOT]
+        or_data = filters[const.Filters.OR]
 
         and_block = []
         not_block = []

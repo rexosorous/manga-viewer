@@ -230,7 +230,7 @@ class Home(QMainWindow, Ui_MainWindow):
             source (QFrame): The frames that represent the book that was double clicked
             event (QMouseEvent, optional): The event that was emitted. Unused, but required by PyQt5
         """
-        source.setPalette(const.highlight_color)
+        source.setPalette(const.Palettes.HIGHLIGHT)
 
 
 
@@ -243,7 +243,7 @@ class Home(QMainWindow, Ui_MainWindow):
             event (QMouseEvent, optional): The event that was emitted. Unused, but required by PyQt5
         """
         if source and (source != self.selected or absolute):
-            source.setPalette(const.primary_color)
+            source.setPalette(const.Palettes.PRIMARY)
 
 
 

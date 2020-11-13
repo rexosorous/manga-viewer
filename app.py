@@ -35,7 +35,7 @@ def close_reader():
 sigs.open_book_signal.connect(open_reader)
 sigs.close_book_signal.connect(close_reader)
 
-stack.setPalette(const.background_color)
+stack.setPalette(const.Palettes.BACKGROUND)
 
 
 stack.showMaximized()

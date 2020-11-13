@@ -41,7 +41,7 @@ class SearchPanel(QFrame, Ui_search_panel):
         super().__init__()
         self.db = db
         self.signals = signals
-        self.filter_type = const.FILTER_AND
+        self.filter_type = const.Filters.AND
         self.setupUi(self)
         self.connect_events()
         self.populate_lists()
@@ -111,10 +111,10 @@ class SearchPanel(QFrame, Ui_search_panel):
             self.filter_type = 3
 
         text = {
-            0: ('CLEAR', const.cleanse_palette),
-            1: ('(+, &) AND', const.and_palette),
-            2: ('(-, !) NOT', const.not_palette),
-            3: ('(/, |) OR', const.or_palette)
+            const.Filters.CLEANSE: ('CLEAR', const.Palettes.CLEANSE),
+            const.Filters.AND: ('(+, &) AND', const.Palettes.AND),
+            const.Filters.NOT: ('(-, !) NOT', const.Palettes.NOT),
+            const.Filters.OR: ('(/, |) OR', const.Palettes.OR)
         }
 
         self.filter_text.setText(text[self.filter_type][0])
@@ -130,10 +130,10 @@ class SearchPanel(QFrame, Ui_search_panel):
             item (ListItem)
         """
         colors = {
-            const.FILTER_NONE: const.no_color,
-            const.FILTER_AND: const.and_color,
-            const.FILTER_NOT: const.not_color,
-            const.FILTER_OR: const.or_color
+            const.Filters.NONE: const.Colors.NONE,
+            const.Filters.AND: const.Colors.AND,
+            const.Filters.NOT: const.Colors.NOT,
+            const.Filters.OR: const.Colors.OR
         }
 
         if item.background() == colors[self.filter_type]: # if we're applying a filter that is already applied to this item
@@ -148,10 +148,10 @@ class SearchPanel(QFrame, Ui_search_panel):
         #       AND filters  ->  NOT filters  ->  OR filters  -> no filters
         #       then sort alphabetically in those groups
         sorting_hat = {
-            const.FILTER_NONE: [],
-            const.FILTER_OR: [],
-            const.FILTER_NOT: [],
-            const.FILTER_AND: []
+            const.Filters.NONE: [],
+            const.Filters.OR: [],
+            const.Filters.NOT: [],
+            const.Filters.AND: []
         }
         while len(source): # remove each item and sort them into their appropriate groups
             temp = source.takeItem(0)
@@ -170,7 +170,7 @@ class SearchPanel(QFrame, Ui_search_panel):
         """Stores all the form information into a dict and then emits a signal to apply the search filters
         """
         filters = {
-            const.FILTER_AND: {
+            const.Filters.AND: {
                 'title': self.title_text.text(),
                 'order': self.order_number.value(),
                 'rating': (self.rating_number.value(), self.rating_toggle.checkState()),
@@ -183,13 +183,13 @@ class SearchPanel(QFrame, Ui_search_panel):
                 'genres': [],
                 'tags': []
             },
-            const.FILTER_NOT: {
+            const.Filters.NOT: {
                 'artists': [],
                 'series': [],
                 'genres': [],
                 'tags': []
             },
-            const.FILTER_OR: {
+            const.Filters.OR: {
                 'artists': [],
                 'series': [],
                 'genres': [],
