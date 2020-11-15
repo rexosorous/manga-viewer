@@ -51,6 +51,14 @@ class SearchPanel(QFrame, Ui_search_panel):
     def connect_events(self):
         self.filter_prev_button.clicked.connect(partial(self.change_filter, -1))
         self.filter_next_button.clicked.connect(partial(self.change_filter, 1))
+        self.artists_text.textChanged.connect(partial(self.search_list, self.artists_list))
+        self.series_text.textChanged.connect(partial(self.search_list, self.series_list))
+        self.genres_text.textChanged.connect(partial(self.search_list, self.genres_list))
+        self.tags_text.textChanged.connect(partial(self.search_list, self.tags_list))
+        self.artists_text.returnPressed.connect(partial(self.add_filter_text, self.artists_text, self.artists_list))
+        self.series_text.returnPressed.connect(partial(self.add_filter_text, self.series_text, self.series_list))
+        self.genres_text.returnPressed.connect(partial(self.add_filter_text, self.genres_text, self.genres_list))
+        self.tags_text.returnPressed.connect(partial(self.add_filter_text, self.tags_text, self.tags_list))
         self.artists_list.itemDoubleClicked.connect(partial(self.add_filter, self.artists_list))
         self.series_list.itemDoubleClicked.connect(partial(self.add_filter, self.series_list))
         self.genres_list.itemDoubleClicked.connect(partial(self.add_filter, self.genres_list))
@@ -58,7 +66,6 @@ class SearchPanel(QFrame, Ui_search_panel):
         self.submit_button.clicked.connect(self.submit)
         self.clear_button.clicked.connect(self.populate_lists)
         self.signals.update_metadata.connect(self.populate_lists)
-
 
 
     def populate_lists(self):
@@ -111,7 +118,7 @@ class SearchPanel(QFrame, Ui_search_panel):
             self.filter_type = 3
 
         text = {
-            const.Filters.CLEANSE: ('CLEAR', const.Palettes.CLEANSE),
+            const.Filters.NONE: ('($) CLEAR', const.Palettes.CLEANSE),
             const.Filters.AND: ('(+, &) AND', const.Palettes.AND),
             const.Filters.NOT: ('(-, !) NOT', const.Palettes.NOT),
             const.Filters.OR: ('(/, |) OR', const.Palettes.OR)
@@ -122,12 +129,66 @@ class SearchPanel(QFrame, Ui_search_panel):
 
 
 
-    def add_filter(self, source, item):
+    def search_list(self, list_widget, search_term):
+        """Hides and reveals items in the list widget based on the text being typed in the corresponding line edit
+
+        Args:
+            list_widget (QListWidget)
+            search_term (str)
+        """
+        prefixes = '+&-!/|$'
+        search_term = search_term.lower()
+        if search_term and search_term[0] in prefixes:
+            search_term = search_term[1:]
+        for i in range(list_widget.count()):
+            item = list_widget.item(i)
+            if search_term in item.text().lower():
+                item.setHidden(False)
+            else:
+                item.setHidden(True)
+
+
+
+    def add_filter_text(self, text_widget, list_widget):
+        """Applies the filter to the topmost ListItem and then floats it to the top of the list
+
+        Alternatively, the user can use prefixes to determine the filter type.
+        Executed when a user hits enter in a listwidget's lineedit.
+
+        Args:
+            text_widget (QLineEdit)
+            list_widget (QListWidget)
+        """
+        filter_type = None
+        prefix = text_widget.text()[0]
+        if prefix in '+&':
+            filter_type = const.Filters.AND
+        elif prefix in '-!':
+            filter_type = const.Filters.NOT
+        elif prefix in '/|':
+            filter_type = const.Filters.OR
+        elif prefix in '$':
+            filter_type = const.Filters.NONE
+
+        for i in range(list_widget.count()):
+            item = list_widget.item(i)
+            if not item.isHidden():
+                self.add_filter(list_widget, item, filter_type)
+                break
+
+        text_widget.clear()
+
+
+
+    def add_filter(self, source, item, filter_type=None):
         """Applies the filter to the selected metadata ListItem and then floats it to the top of the list
+
+        Executed when a user double clicks a list item or after a user hits enter ina listwidget's lineedit
 
         Args:
             source (QListWidget)
             item (ListItem)
+            filter_type (int)
         """
         colors = {
             const.Filters.NONE: const.Colors.NONE,
@@ -136,12 +197,15 @@ class SearchPanel(QFrame, Ui_search_panel):
             const.Filters.OR: const.Colors.OR
         }
 
-        if item.background() == colors[self.filter_type]: # if we're applying a filter that is already applied to this item
+        if filter_type is None:
+            filter_type = self.filter_type
+
+        if item.background() == colors[filter_type]: # if we're applying a filter that is already applied to this item
             return
 
         # apply filter to this item
-        item.setBackground(colors[self.filter_type])
-        item.filter_type = self.filter_type
+        item.setBackground(colors[filter_type])
+        item.filter_type = filter_type
 
 
         # take out all the items in the list and re-sort them in a custom order:

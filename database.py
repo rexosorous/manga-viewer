@@ -294,7 +294,7 @@ class DBHandler:
         'WHERE\n\t' + or_string) if or_block else query
         query = query + '\nORDER BY ' + sort_query[sort_by]
 
-        self.db.execute(query + sort_by)
+        self.db.execute(query)
         return self.db.fetchall()
 
 
