@@ -392,6 +392,19 @@ class DBHandler:
 
 
 
+    def rename_entry(self, table: str, id_: int, new_name: str):
+        """Renames a metadata entry
+
+        Args:
+            table (str)
+            id_ (int)
+            new_name (str)
+        """
+        self.db.execute(f'UPDATE {table} SET name="{new_name}" WHERE id={id_}')
+        self.conn.commit()
+
+
+
     def update_book(self, data: dict):
         """Updates a book's data
 

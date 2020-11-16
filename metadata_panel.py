@@ -3,6 +3,8 @@ from functools import partial
 
 # dependencies
 from PyQt5.QtWidgets import QFrame
+from PyQt5.QtWidgets import QInputDialog
+from PyQt5.QtWidgets import QLineEdit
 from PyQt5.QtWidgets import QMenu
 from PyQt5.QtWidgets import QMessageBox
 
@@ -125,6 +127,7 @@ class MetadataPanel(QFrame, Ui_metadata_panel):
         """Opens a context menu for the books.
 
         "Clear Selected": clears the selected list items
+        "Rename": renames the metadata entry
         "Delete": deletes the metadata entry after a confirmation message
 
         Args:
@@ -132,11 +135,33 @@ class MetadataPanel(QFrame, Ui_metadata_panel):
         """
         menu = QMenu()
         clear = menu.addAction('Clear Selected')
+        rename = menu.addAction('Rename')
         delete = menu.addAction('Delete')
 
         if (selection := menu.exec_(event.globalPos())):
             if selection == clear:
                 source.clearSelection()
+            elif selection == rename:
+                if (selected := source.currentItem()): # only proceed if the user has selected something to rename
+                    new_name = ''
+                    yes_button = True
+                    while yes_button and not new_name:
+                        new_name, yes_button = QInputDialog.getText(self, 'Rename', f'What would you "{selected.text()}" to be renamed to?', QLineEdit.Normal, '')
+
+                        if not yes_button:
+                            return
+
+                        elif yes_button and new_name:
+                            self.db.rename_entry(selected.table, selected.id_, new_name)
+                            self.signals.update_metadata.emit()
+                            return
+
+                        popup = QMessageBox()
+                        popup.setIcon(QMessageBox.Critical)
+                        popup.setWindowTitle('Error')
+                        popup.setText('Error\nNo new name specified.')
+                        popup.setStandardButtons(QMessageBox.Close)
+                        response = popup.exec_()
             elif selection == delete:
                 if (selected := source.currentItem()): # only proceed if the user has selected something to delete
                     # confirmation popup
