@@ -206,7 +206,7 @@ class Home(QMainWindow, Ui_MainWindow):
             self.reset_selected()
             self.selected = source
             self.highlight(source)
-            self.details_panel.populate(source.image, source.id_)
+            self.details_panel.populate_book_info(source.image, source.id_)
 
 
 
@@ -256,7 +256,7 @@ class Home(QMainWindow, Ui_MainWindow):
         if not event or event.button() == 1: # left click
             self.unhighlight(self.selected, None, True)
             self.selected = None
-            self.details_panel.clear_fields()
+            self.details_panel.populate_metadata()
             self.details_panel.book_id = -1
 
 

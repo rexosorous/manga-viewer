@@ -8,6 +8,7 @@ from PyQt5.QtWidgets import QFrame
 from PyQt5.QtWidgets import QMessageBox
 
 # local modules
+import constants as const
 from ui.details_frame import Ui_details_panel
 
 
@@ -23,23 +24,17 @@ class DetailsPanel(QFrame, Ui_details_panel):
     Attributes:
         cover_img (QLabel)
         title_text (QLineEdit)
-        artists_yes_text (QLineEdit)
-        artists_yes_list (QListWidget)
-        artists_no_text (QLineEdit)
-        artists_no_list (QListWidget)
+        artist_text (QLineEdit)
+        artist_list (QListWidget)
         series_dropdown (QComboBox)
         order_number (QSpinBox)
         rating_number (QSpinBox)
         pages_text (QLineEdit)
         date_text (QDateEdit)
-        genres_yes_text (QLineEdit)
-        genres_yes_list (QListWidget)
-        genres_no_text (QLineEdit)
-        genres_no_list (QListWidget)
-        tags_yes_text (QLineEdit)
-        tags_yes_list (QListWidget)
-        tags_no_text (QLineEdit)
-        tags_no_list (QListWidget)
+        genre_text (QLineEdit)
+        genre_list (QListWidget)
+        tag_text (QLineEdit)
+        tag_list (QListWidget)
         notes_text (QTextEdit)
         submit_button (QPushButton)
     """
@@ -55,105 +50,72 @@ class DetailsPanel(QFrame, Ui_details_panel):
 
 
     def populate_metadata(self):
-        selected_series = self.series_dropdown.currentText()
+        self.clear_fields()
 
-        # clear fields
-        self.series_dropdown.clear()
-        self.artists_no_list.clear()
-        self.genres_no_list.clear()
-        self.tags_no_list.clear()
+        metadata = self.db.get_metadata()
 
         # populate series options
         self.series_dropdown.addItem('')
-        for series in self.db.get_metadata()['series']:
+        for series in metadata['series']:
             self.series_dropdown.addItem(series.text(), series.id_)
 
-        # select the correct series
-        self.series_dropdown.setCurrentText(selected_series)
-
-        # populate metadata
-        metadata = self.db.get_metadata()
+        # populate metadata lists
         for artist in metadata['artists']:
-            self.artists_no_list.addItem(artist)
+            self.artists_list.addItem(artist)
         for genre in metadata['genres']:
-            self.genres_no_list.addItem(genre)
+            self.genres_list.addItem(genre)
         for tag in metadata['tags']:
-            self.tags_no_list.addItem(tag)
-
-        # remove any metadata that is in yes_list
-        for pos in reversed(range(self.artists_no_list.count())):
-            if self.artists_no_list.item(pos) in self.get_list_items(self.artists_yes_list):
-                self.artists_no_list.takeItem(pos)
-
-        for pos in reversed(range(self.genres_no_list.count())):
-            if self.genres_no_list.item(pos) in self.get_list_items(self.genres_yes_list):
-                self.genres_no_list.takeItem(pos)
-
-        for pos in reversed(range(self.tags_no_list.count())):
-            if self.tags_no_list.item(pos) in self.get_list_items(self.tags_yes_list):
-                self.tags_no_list.takeItem(pos)
+            self.tags_list.addItem(tag)
 
 
 
     def connect_events(self):
-        self.signals.update_metadata.connect(self.populate_metadata)
-        self.artists_yes_list.itemDoubleClicked.connect(partial(self.move_item, self.artists_yes_list))
-        self.artists_no_list.itemDoubleClicked.connect(partial(self.move_item, self.artists_no_list))
-        self.genres_yes_list.itemDoubleClicked.connect(partial(self.move_item, self.genres_yes_list))
-        self.genres_no_list.itemDoubleClicked.connect(partial(self.move_item, self.genres_no_list))
-        self.tags_yes_list.itemDoubleClicked.connect(partial(self.move_item, self.tags_yes_list))
-        self.tags_no_list.itemDoubleClicked.connect(partial(self.move_item, self.tags_no_list))
+        self.signals.update_metadata.connect(self.update_metadata)
+        self.artists_text.textChanged.connect(partial(self.search_list, self.artists_list))
+        self.genres_text.textChanged.connect(partial(self.search_list, self.genres_list))
+        self.tags_text.textChanged.connect(partial(self.search_list, self.tags_list))
+        self.artists_text.returnPressed.connect(partial(self.apply_metadata_text, self.artists_text, self.artists_list))
+        self.genres_text.returnPressed.connect(partial(self.apply_metadata_text, self.genres_text, self.genres_list))
+        self.tags_text.returnPressed.connect(partial(self.apply_metadata_text, self.tags_text, self.tags_list))
+        self.artists_list.itemDoubleClicked.connect(partial(self.apply_metadata, self.artists_list))
+        self.genres_list.itemDoubleClicked.connect(partial(self.apply_metadata, self.genres_list))
+        self.tags_list.itemDoubleClicked.connect(partial(self.apply_metadata, self.tags_list))
         self.submit_button.clicked.connect(self.submit)
-
-
-
-    def get_list_items(self, list_widget):
-        """Returns a list of ListItem that are present in a list
-
-        Unfortuantely, PyQt5 does not already have a built in function like this.
-
-        Args:
-            list_widget (QListWidget)
-
-        Returns:
-            [ListItem]
-        """
-        items = []
-        for i in range(list_widget.count()):
-            items.append(list_widget.item(i))
-        return items
 
 
 
     def clear_fields(self):
         self.cover_img.clear()
         self.title_text.clear()
-        self.artists_yes_text.clear()
-        self.artists_yes_list.clear()
-        self.artists_no_text.clear()
-        self.artists_no_list.clear()
-        self.series_dropdown.setCurrentIndex(0)
+        self.artists_text.clear()
+        self.artists_list.clear()
+        self.series_dropdown.clear()
         self.order_number.setValue(0)
         self.rating_number.setValue(0)
         self.pages_text.clear()
         self.date_text.clear()
-        self.genres_yes_text.clear()
-        self.genres_yes_list.clear()
-        self.genres_no_text.clear()
-        self.genres_no_list.clear()
-        self.tags_yes_text.clear()
-        self.tags_yes_list.clear()
-        self.tags_no_text.clear()
-        self.tags_no_list.clear()
+        self.genres_text.clear()
+        self.genres_list.clear()
+        self.tags_text.clear()
+        self.tags_list.clear()
         self.notes_text.clear()
 
+
+
+    def update_metadata(self):
+        """Updates all the metadata when metadata is edited in any way
+
+        Makes sure to re-populate book info if a book is currently selected
+        """
+        cover_img = self.cover_img.pixmap()
         self.populate_metadata()
+        if self.book_id >= 0:
+            self.populate_book_info(cover_img, self.book_id)
 
 
 
-    def populate(self, cover_img, book_id):
+    def populate_book_info(self, cover_img, book_id):
         self.book_id = book_id
-        self.clear_fields()
         book_info = self.db.get_book_info(book_id)
 
         self.cover_img.setPixmap(cover_img)
@@ -165,35 +127,92 @@ class DetailsPanel(QFrame, Ui_details_panel):
         self.date_text.setText(datetime.fromtimestamp(book_info['date_added']).strftime('%B %d, %Y - %I:%M%p'))
         self.notes_text.setText(book_info['notes'])
 
-        for artist in book_info['artists']:
-            self.artists_yes_list.addItem(artist)
-        for genre in book_info['genres']:
-            self.genres_yes_list.addItem(genre)
-        for tag in book_info['tags']:
-            self.tags_yes_list.addItem(tag)
+        for i in range(self.artists_list.count()):
+            item = self.artists_list.item(i)
+            if item in book_info['artists']:
+                self.apply_metadata(self.artists_list, item)
 
-        self.populate_metadata()
+        for i in range(self.genres_list.count()):
+            item = self.genres_list.item(i)
+            if item in book_info['genres']:
+                self.apply_metadata(self.genres_list, item)
+
+        for i in range(self.tags_list.count()):
+            item = self.tags_list.item(i)
+            if item in book_info['tags']:
+                self.apply_metadata(self.tags_list, item)
 
 
 
-    def move_item(self, source, item):
-        """When an item is double clicked, remove it from that list and place it in the opposite list (yes to no and vice versa)
+    def apply_metadata(self, list_widget, item):
+        """Applies or unapplies the selected metadata and sorts the list.
+
+        Changes the applied status to the opposite of what it currently is
 
         Args:
-            source (QListWidget)
-            item (ListItem)
         """
-        list_picker = {
-            'artists_yes_list': self.artists_no_list,
-            'artists_no_list': self.artists_yes_list,
-            'genres_yes_list': self.genres_no_list,
-            'genres_no_list': self.genres_yes_list,
-            'tags_yes_list': self.tags_no_list,
-            'tags_no_list': self.tags_yes_list
-        }
+        # flip flop the applied status
+        if item.background() == const.Colors.AND:
+            item.setBackground(const.Colors.NONE)
+        elif item.background() == const.Colors.NONE:
+            item.setBackground(const.Colors.AND)
 
-        move = source.takeItem(source.row(item))
-        list_picker[source.objectName()].addItem(move)
+        # take out all the items in the list and sort them based on their applied status
+        applied = []
+        unapplied = []
+        while len(list_widget): # remove each item and sort them into their appropriate groups
+            item = list_widget.takeItem(0)
+            if item.background() == const.Colors.AND:
+                applied.append(item)
+            elif item.background() == const.Colors.NONE:
+                unapplied.append(item)
+
+        # sort backwards (explained below)
+        applied.sort(key=lambda x: x.text(), reverse=True)
+        unapplied.sort(key=lambda x: x.text(), reverse=True)
+
+        # re-add the items in the correct order
+        for item in unapplied: # we add everything in backwards because it's easier to insert each item at pos 0 rather than find out what the last pos is
+            list_widget.insertItem(0, item)
+        for item in applied:
+            list_widget.insertItem(0, item)
+
+
+
+    def search_list(self, list_widget, search_term):
+        """Hides and reveals items in the list widget based on the text being typed in the corresponding line edit
+
+        Args:
+            list_widget (QListWidget)
+            search_term (str)
+        """
+        search_term = search_term.lower()
+        for i in range(list_widget.count()):
+            item = list_widget.item(i)
+            if search_term in item.text().lower():
+                item.setHidden(False)
+            else:
+                item.setHidden(True)
+
+
+
+    def apply_metadata_text(self, text_widget, list_widget):
+        """Applies the filter to the topmost ListItem and then floats it to the top of the list
+
+        Alternatively, the user can use prefixes to determine the filter type.
+        Executed when a user hits enter in a listwidget's lineedit.
+
+        Args:
+            text_widget (QLineEdit)
+            list_widget (QListWidget)
+        """
+        for i in range(list_widget.count()):
+            item = list_widget.item(i)
+            if not item.isHidden():
+                self.apply_metadata(list_widget, item)
+                break
+
+        text_widget.clear()
 
 
 
@@ -223,11 +242,26 @@ class DetailsPanel(QFrame, Ui_details_panel):
         data['series_order'] = (self.order_number.value() if self.order_number.value() else None)
         data['rating'] = (self.rating_number.value() if self.rating_number.value() else None)
         data['notes'] = (self.notes_text.toPlainText() if self.notes_text.toPlainText() else None)
-        data['artists'] = [x.id_ for x in self.get_list_items(self.artists_yes_list)]
-        data['genres'] = [x.id_ for x in self.get_list_items(self.genres_yes_list)]
-        data['tags'] = [x.id_ for x in self.get_list_items(self.tags_yes_list)]
 
-        # make sure required field, title, is filled
+        data['artists'] = []
+        for i in range(self.artists_list.count()):
+            item = self.artists_list.item(i)
+            if item.background == const.Colors.AND:
+                data['artists'].append(item.id_)
+
+        data['genres'] = []
+        for i in range(self.genres_list.count()):
+            item = self.genres_list.item(i)
+            if item.background == const.Colors.AND:
+                data['genres'].append(item.id_)
+
+        data['tags'] = []
+        for i in range(self.tags_list.count()):
+            item = self.tags_list.item(i)
+            if item.background == const.Colors.AND:
+                data['tags'].append(item.id_)
+
+        # make sure title (required field) is filled
         if not data['title']:
             popup = QMessageBox()
             popup.setIcon(QMessageBox.Critical)

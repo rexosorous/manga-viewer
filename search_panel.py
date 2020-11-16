@@ -129,6 +129,56 @@ class SearchPanel(QFrame, Ui_search_panel):
 
 
 
+    def add_filter(self, source, item, filter_type=None):
+        """Applies the filter to the selected metadata ListItem and then floats it to the top of the list
+
+        Executed when a user double clicks a list item or after a user hits enter ina listwidget's lineedit
+
+        Args:
+            source (QListWidget)
+            item (ListItem)
+            filter_type (int)
+        """
+        colors = {
+            const.Filters.NONE: const.Colors.NONE,
+            const.Filters.AND: const.Colors.AND,
+            const.Filters.NOT: const.Colors.NOT,
+            const.Filters.OR: const.Colors.OR
+        }
+
+        if filter_type is None:
+            filter_type = self.filter_type
+
+        if item.background() == colors[filter_type]: # if we're applying a filter that is already applied to this item
+            return
+
+        # apply filter to this item
+        item.setBackground(colors[filter_type])
+        item.filter_type = filter_type
+
+
+        # take out all the items in the list and re-sort them in a custom order:
+        #       AND filters  ->  NOT filters  ->  OR filters  -> no filters
+        #       then sort alphabetically in those groups
+        sorting_hat = {
+            const.Filters.NONE: [],
+            const.Filters.OR: [],
+            const.Filters.NOT: [],
+            const.Filters.AND: []
+        }
+        while len(source): # remove each item and sort them into their appropriate groups
+            temp = source.takeItem(0)
+            sorting_hat[temp.filter_type].append(temp)
+
+        for key in sorting_hat:
+            # re-add each item in the correct order
+            # we add everything in backwards because it's easier to insert each item at pos 0 rather than find out what the last pos is
+            sorting_hat[key].sort(key=lambda x: x.text(), reverse=True)
+            for element in sorting_hat[key]:
+                source.insertItem(0, element)
+
+
+
     def search_list(self, list_widget, search_term):
         """Hides and reveals items in the list widget based on the text being typed in the corresponding line edit
 
@@ -177,56 +227,6 @@ class SearchPanel(QFrame, Ui_search_panel):
                 break
 
         text_widget.clear()
-
-
-
-    def add_filter(self, source, item, filter_type=None):
-        """Applies the filter to the selected metadata ListItem and then floats it to the top of the list
-
-        Executed when a user double clicks a list item or after a user hits enter ina listwidget's lineedit
-
-        Args:
-            source (QListWidget)
-            item (ListItem)
-            filter_type (int)
-        """
-        colors = {
-            const.Filters.NONE: const.Colors.NONE,
-            const.Filters.AND: const.Colors.AND,
-            const.Filters.NOT: const.Colors.NOT,
-            const.Filters.OR: const.Colors.OR
-        }
-
-        if filter_type is None:
-            filter_type = self.filter_type
-
-        if item.background() == colors[filter_type]: # if we're applying a filter that is already applied to this item
-            return
-
-        # apply filter to this item
-        item.setBackground(colors[filter_type])
-        item.filter_type = filter_type
-
-
-        # take out all the items in the list and re-sort them in a custom order:
-        #       AND filters  ->  NOT filters  ->  OR filters  -> no filters
-        #       then sort alphabetically in those groups
-        sorting_hat = {
-            const.Filters.NONE: [],
-            const.Filters.OR: [],
-            const.Filters.NOT: [],
-            const.Filters.AND: []
-        }
-        while len(source): # remove each item and sort them into their appropriate groups
-            temp = source.takeItem(0)
-            sorting_hat[temp.filter_type].append(temp)
-
-        for key in sorting_hat:
-            # re-add each item in the correct order
-            # we add everything in backwards because it's easier to insert each item at pos 0 rather than find out what the last pos is
-            sorting_hat[key].sort(key=lambda x: x.text(), reverse=True)
-            for element in sorting_hat[key]:
-                source.insertItem(0, element)
 
 
 
