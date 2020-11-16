@@ -3,7 +3,6 @@ from datetime import datetime
 from functools import partial
 
 # dependencies
-from PyQt5.QtCore import QMimeData
 from PyQt5.QtWidgets import QFrame
 from PyQt5.QtWidgets import QMessageBox
 
@@ -89,6 +88,8 @@ class DetailsPanel(QFrame, Ui_details_panel):
         self.submit_button.clicked.connect(self.submit)
 
         # signals
+        self.signals.populate_details.connect(self.populate_book_info)
+        self.signals.depopulate_details.connect(self.cleanse_details)
         self.signals.update_metadata.connect(self.update_metadata)
 
 
@@ -150,6 +151,16 @@ class DetailsPanel(QFrame, Ui_details_panel):
             item = self.tags_list.item(i)
             if item in book_info['tags']:
                 self.apply_metadata(self.tags_list, item)
+
+
+
+    def cleanse_details(self):
+        """Cleanses info about the currently selected book
+
+        Executed when a book is deselected in the gallery
+        """
+        self.book_id = -1
+        self.populate_metadata()
 
 
 
