@@ -268,19 +268,19 @@ class DetailsPanel(QFrame, Ui_details_panel):
         data['artists'] = []
         for i in range(self.artists_list.count()):
             item = self.artists_list.item(i)
-            if item.background == const.Colors.AND:
+            if item.background() == const.Colors.AND:
                 data['artists'].append(item.id_)
 
         data['genres'] = []
         for i in range(self.genres_list.count()):
             item = self.genres_list.item(i)
-            if item.background == const.Colors.AND:
+            if item.background() == const.Colors.AND:
                 data['genres'].append(item.id_)
 
         data['tags'] = []
         for i in range(self.tags_list.count()):
             item = self.tags_list.item(i)
-            if item.background == const.Colors.AND:
+            if item.background() == const.Colors.AND:
                 data['tags'].append(item.id_)
 
         # make sure title (required field) is filled
