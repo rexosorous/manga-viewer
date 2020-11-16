@@ -70,17 +70,26 @@ class DetailsPanel(QFrame, Ui_details_panel):
 
 
     def connect_events(self):
-        self.signals.update_metadata.connect(self.update_metadata)
+        # typing in the search bars
         self.artists_text.textChanged.connect(partial(self.search_list, self.artists_list))
         self.genres_text.textChanged.connect(partial(self.search_list, self.genres_list))
         self.tags_text.textChanged.connect(partial(self.search_list, self.tags_list))
+
+        # hitting enter in the search bars
         self.artists_text.returnPressed.connect(partial(self.apply_metadata_text, self.artists_text, self.artists_list))
         self.genres_text.returnPressed.connect(partial(self.apply_metadata_text, self.genres_text, self.genres_list))
         self.tags_text.returnPressed.connect(partial(self.apply_metadata_text, self.tags_text, self.tags_list))
+
+        # double clicking a list item
         self.artists_list.itemDoubleClicked.connect(partial(self.apply_metadata, self.artists_list))
         self.genres_list.itemDoubleClicked.connect(partial(self.apply_metadata, self.genres_list))
         self.tags_list.itemDoubleClicked.connect(partial(self.apply_metadata, self.tags_list))
+
+        # buttons
         self.submit_button.clicked.connect(self.submit)
+
+        # signals
+        self.signals.update_metadata.connect(self.update_metadata)
 
 
 
@@ -150,6 +159,8 @@ class DetailsPanel(QFrame, Ui_details_panel):
         Changes the applied status to the opposite of what it currently is
 
         Args:
+            list_widget (QListWidget)
+            item (ListItem)
         """
         # flip flop the applied status
         if item.background() == const.Colors.AND:

@@ -44,31 +44,41 @@ class SearchPanel(QFrame, Ui_search_panel):
         self.filter_type = const.Filters.AND
         self.setupUi(self)
         self.connect_events()
-        self.populate_lists()
+        self.populate_metadata()
 
 
 
     def connect_events(self):
-        self.filter_prev_button.clicked.connect(partial(self.change_filter, -1))
-        self.filter_next_button.clicked.connect(partial(self.change_filter, 1))
+        # typing in the search bars
         self.artists_text.textChanged.connect(partial(self.search_list, self.artists_list))
         self.series_text.textChanged.connect(partial(self.search_list, self.series_list))
         self.genres_text.textChanged.connect(partial(self.search_list, self.genres_list))
         self.tags_text.textChanged.connect(partial(self.search_list, self.tags_list))
+
+        # hitting enter in the sarch bars
         self.artists_text.returnPressed.connect(partial(self.add_filter_text, self.artists_text, self.artists_list))
         self.series_text.returnPressed.connect(partial(self.add_filter_text, self.series_text, self.series_list))
         self.genres_text.returnPressed.connect(partial(self.add_filter_text, self.genres_text, self.genres_list))
         self.tags_text.returnPressed.connect(partial(self.add_filter_text, self.tags_text, self.tags_list))
+
+        # double clicking a list item
         self.artists_list.itemDoubleClicked.connect(partial(self.add_filter, self.artists_list))
         self.series_list.itemDoubleClicked.connect(partial(self.add_filter, self.series_list))
         self.genres_list.itemDoubleClicked.connect(partial(self.add_filter, self.genres_list))
         self.tags_list.itemDoubleClicked.connect(partial(self.add_filter, self.tags_list))
+
+        # buttons
+        self.filter_prev_button.clicked.connect(partial(self.change_filter, -1))
+        self.filter_next_button.clicked.connect(partial(self.change_filter, 1))
         self.submit_button.clicked.connect(self.submit)
-        self.clear_button.clicked.connect(self.populate_lists)
-        self.signals.update_metadata.connect(self.populate_lists)
+        self.clear_button.clicked.connect(self.populate_metadata)
+
+        # signals
+        self.signals.update_metadata.connect(self.populate_metadata)
 
 
-    def populate_lists(self):
+
+    def populate_metadata(self):
         self.clear_fields()
         metadata = self.db.get_metadata()
 

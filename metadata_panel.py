@@ -42,7 +42,7 @@ class MetadataPanel(QFrame, Ui_metadata_panel):
         self.db = db
         self.signals = signals
         self.connect_events()
-        self.populate_lists()
+        self.populate_metadata()
 
 
 
@@ -65,8 +65,33 @@ class MetadataPanel(QFrame, Ui_metadata_panel):
         self.genres_list.contextMenuEvent = partial(self.context_menu, self.genres_list)
         self.tags_list.contextMenuEvent = partial(self.context_menu, self.tags_list)
 
-        # update lists
-        self.signals.update_metadata.connect(self.populate_lists)
+        # signals
+        self.signals.update_metadata.connect(self.populate_metadata)
+
+
+
+    def populate_metadata(self):
+        """Populates each of the lists
+        """
+        self.clear_fields()
+        metadata = self.db.get_metadata()
+
+        for item in metadata['artists']:
+            self.artists_list.addItem(item)
+        for item in metadata['series']:
+            self.series_list.addItem(item)
+        for item in metadata['genres']:
+            self.genres_list.addItem(item)
+        for item in metadata['tags']:
+            self.tags_list.addItem(item)
+
+
+
+    def clear_fields(self):
+        self.artists_list.clear()
+        self.series_list.clear()
+        self.genres_list.clear()
+        self.tags_list.clear()
 
 
 
@@ -127,28 +152,3 @@ class MetadataPanel(QFrame, Ui_metadata_panel):
 
                     self.db.delete_entry(selected.table, selected.id_)
                     self.signals.update_metadata.emit()
-
-
-
-    def clear_lists(self):
-        self.artists_list.clear()
-        self.series_list.clear()
-        self.genres_list.clear()
-        self.tags_list.clear()
-
-
-
-    def populate_lists(self):
-        """Populates each of the lists
-        """
-        self.clear_lists()
-        metadata = self.db.get_metadata()
-
-        for item in metadata['artists']:
-            self.artists_list.addItem(item)
-        for item in metadata['series']:
-            self.series_list.addItem(item)
-        for item in metadata['genres']:
-            self.genres_list.addItem(item)
-        for item in metadata['tags']:
-            self.tags_list.addItem(item)

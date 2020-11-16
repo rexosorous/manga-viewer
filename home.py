@@ -60,7 +60,7 @@ class Home(QMainWindow, Ui_MainWindow):
         self.metadata_panel = MetadataPanel(self.db, self.signals)
         self.setup_panels()
 
-        self.connect_signals()
+        self.connect_events()
         self.populate_gallery()
 
 
@@ -76,16 +76,23 @@ class Home(QMainWindow, Ui_MainWindow):
 
 
 
-    def connect_signals(self):
+    def connect_events(self):
         """Connects each signal to their respective functions
         """
+        # dropdowns
+        self.sort_by.textActivated.connect(self.sort_gallery)
+
+        # buttons
         self.details_button.clicked.connect(lambda : [self.details_panel.setVisible(True), self.search_panel.setVisible(False), self.metadata_panel.setVisible(False)])
         self.advanced_search_button.clicked.connect(lambda : [self.details_panel.setVisible(False), self.search_panel.setVisible(True), self.metadata_panel.setVisible(False)])
         self.metadata_button.clicked.connect(lambda : [self.details_panel.setVisible(False), self.search_panel.setVisible(False), self.metadata_panel.setVisible(True)])
-        self.sort_by.textActivated.connect(self.sort_gallery)
         self.random_button.clicked.connect(self.random_select)
+
+        # bookshelf
         self.bookshelf_area.contextMenuEvent = self.context_menu
         self.bookshelf_area.mousePressEvent = self.reset_selected
+
+        # signals
         self.signals.update_spines.connect(self.update_gallery)
         self.signals.search_advanced.connect(self.populate_gallery)
 
