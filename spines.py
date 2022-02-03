@@ -33,6 +33,7 @@ class BookSpine(QtWidgets.QFrame):
         self.title = title
         self.folder = folder
         self.image = None
+        self.scale = QtWidgets.QDesktopWidget().screenGeometry(0).width() / 1920
 
         self.setup_frame()
         self.setup_layout()
@@ -40,8 +41,8 @@ class BookSpine(QtWidgets.QFrame):
         self.setup_title()
 
     def setup_frame(self):
-        self.setFixedWidth(const.Spines.WIDTH)
-        self.setFixedHeight(const.Spines.HEIGHT)
+        self.setFixedWidth(int(const.Spines.WIDTH * self.scale))
+        self.setFixedHeight(int(const.Spines.HEIGHT * self.scale))
         self.setFrameShape(QtWidgets.QFrame.Box)
         self.setFrameShadow(QtWidgets.QFrame.Raised)
         self.setContentsMargins(3, 3, 3, 3)
@@ -56,20 +57,20 @@ class BookSpine(QtWidgets.QFrame):
 
     def setup_img(self):
         img = QtWidgets.QLabel()
-        img.setFixedWidth(const.Spines.IMG_WIDTH)
-        img.setFixedHeight(const.Spines.IMG_HEIGHT)
+        img.setFixedWidth(int(const.Spines.IMG_WIDTH * self.scale))
+        img.setFixedHeight(int(const.Spines.IMG_HEIGHT * self.scale))
         img.setAlignment(QtCore.Qt.AlignCenter)
         img.setContentsMargins(0, 0, 0, 0)
         self.image = QPixmap(f'{const.directory}/{self.folder}/{listdir(f"{const.directory}/{self.folder}/")[0]}')
-        self.image = self.image.scaledToHeight(const.Spines.IMG_HEIGHT, QtCore.Qt.SmoothTransformation)
-        crop = QtCore.QRect((self.image.width() - const.Spines.IMG_WIDTH) / 2, (self.image.height() - const.Spines.IMG_HEIGHT) / 2, const.Spines.IMG_WIDTH, const.Spines.IMG_HEIGHT)
+        self.image = self.image.scaledToHeight(int(const.Spines.IMG_HEIGHT * self.scale), QtCore.Qt.SmoothTransformation)
+        crop = QtCore.QRect((self.image.width() - int(const.Spines.IMG_WIDTH * self.scale)) / 2, (self.image.height() - int(const.Spines.IMG_HEIGHT * self.scale)) / 2, int(const.Spines.IMG_WIDTH * self.scale), int(const.Spines.IMG_HEIGHT * self.scale))
         self.image = self.image.copy(crop)
         img.setPixmap(self.image)
         self.layout.addWidget(img)
 
     def setup_title(self):
         self.title_label = QtWidgets.QLabel()
-        self.title_label.setFixedWidth(const.Spines.IMG_WIDTH)
+        self.title_label.setFixedWidth(int(const.Spines.IMG_WIDTH * self.scale))
         self.title_label.setFixedHeight(50)
         self.title_label.setAlignment(QtCore.Qt.AlignCenter)
         self.title_label.setContentsMargins(0, 0, 0, 0)

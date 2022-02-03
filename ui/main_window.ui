@@ -305,12 +305,6 @@
        </property>
        <item>
         <widget class="QScrollArea" name="bookshelf_area">
-         <property name="maximumSize">
-          <size>
-           <width>1542</width>
-           <height>16777215</height>
-          </size>
-         </property>
          <property name="frameShape">
           <enum>QFrame::Box</enum>
          </property>
@@ -326,7 +320,7 @@
             <x>0</x>
             <y>0</y>
             <width>820</width>
-            <height>433</height>
+            <height>434</height>
            </rect>
           </property>
           <layout class="QGridLayout" name="bookshelf"/>
@@ -344,10 +338,41 @@
      <x>0</x>
      <y>0</y>
      <width>842</width>
-     <height>22</height>
+     <height>21</height>
     </rect>
    </property>
+   <widget class="QMenu" name="menuFile">
+    <property name="title">
+     <string>File</string>
+    </property>
+    <addaction name="actionScan_For_New_Books"/>
+    <addaction name="actionChange_Directory"/>
+    <addaction name="separator"/>
+    <addaction name="actionBackup_Database"/>
+    <addaction name="actionLoad_Database"/>
+   </widget>
+   <addaction name="menuFile"/>
   </widget>
+  <action name="actionScan_For_New_Books">
+   <property name="text">
+    <string>Scan For New Books</string>
+   </property>
+  </action>
+  <action name="actionChange_Directory">
+   <property name="text">
+    <string>Change Directory</string>
+   </property>
+  </action>
+  <action name="actionBackup_Database">
+   <property name="text">
+    <string>Backup Database</string>
+   </property>
+  </action>
+  <action name="actionLoad_Database">
+   <property name="text">
+    <string>Load Database</string>
+   </property>
+  </action>
  </widget>
  <resources/>
  <connections/>
