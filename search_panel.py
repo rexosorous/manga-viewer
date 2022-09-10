@@ -123,15 +123,15 @@ class SearchPanel(QFrame, Ui_search_panel):
         """
         self.filter_type += index_change
         if self.filter_type < 0:
-            self.filter_type = 0
-        elif self.filter_type > 3:
             self.filter_type = 3
+        elif self.filter_type > 3:
+            self.filter_type = 0
 
         text = {
-            const.Filters.NONE: ('($) CLEAR', const.Palettes.CLEANSE),
-            const.Filters.AND: ('(+, &) AND', const.Palettes.AND),
-            const.Filters.NOT: ('(-, !) NOT', const.Palettes.NOT),
-            const.Filters.OR: ('(/, |) OR', const.Palettes.OR)
+            const.Filters.NONE: ('CLEAR ($)', const.Palettes.CLEANSE),
+            const.Filters.AND: ('AND (+, &)', const.Palettes.AND),
+            const.Filters.NOT: ('NOT (-, !)', const.Palettes.NOT),
+            const.Filters.OR: ('OR (/, |)', const.Palettes.OR)
         }
 
         self.filter_text.setText(text[self.filter_type][0])

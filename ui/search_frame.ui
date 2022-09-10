@@ -124,7 +124,7 @@
          </font>
         </property>
         <property name="text">
-         <string>(+, &amp;) AND</string>
+         <string>AND (+, &amp;)</string>
         </property>
         <property name="alignment">
          <set>Qt::AlignCenter</set>

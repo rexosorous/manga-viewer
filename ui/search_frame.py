@@ -241,7 +241,7 @@ class Ui_search_panel(object):
         search_panel.setWindowTitle(_translate("search_panel", "Frame"))
         self.label_14.setText(_translate("search_panel", "Advanced Search"))
         self.filter_prev_button.setText(_translate("search_panel", "Prev"))
-        self.filter_text.setText(_translate("search_panel", "(+, &) AND"))
+        self.filter_text.setText(_translate("search_panel", "AND (+, &)"))
         self.filter_next_button.setText(_translate("search_panel", "Next"))
         self.label_15.setText(_translate("search_panel", "Title"))
         self.label_16.setText(_translate("search_panel", "Artists"))
