@@ -1,6 +1,7 @@
 # standard libraries
 from functools import partial
 from os import listdir
+from os.path import isdir
 import random
 
 # dependencies
@@ -10,6 +11,7 @@ from PyQt5.QtWidgets import QMenu
 # local modules
 import constants as const
 import database
+from datetime import datetime
 from details_panel import DetailsPanel
 from metadata_panel import MetadataPanel
 from search_panel import SearchPanel
@@ -79,6 +81,12 @@ class Home(QMainWindow, Ui_MainWindow):
     def connect_events(self):
         """Connects each signal to their respective functions
         """
+        # toolbar
+        self.scan_button.triggered.connect(self.scan_directory)
+        # self.change_directory_button.triggered.connect()
+        # self.backup_database_button.triggered.connect()
+        # self.load_database_button.triggered.conenct()
+
         # dropdowns
         self.sort_by.textActivated.connect(self.sort_gallery)
 
@@ -96,6 +104,16 @@ class Home(QMainWindow, Ui_MainWindow):
         self.signals.update_spines.connect(self.update_gallery)
         self.signals.search_advanced.connect(self.populate_gallery)
 
+
+
+    def scan_directory(self):
+        """Scans the manga directory for any new entries, adds the new books to the db with near blank fields, and then sets the search filter to only show the new books so the user can edit the metadata
+        """
+        scan_time = datetime.now().timestamp()
+        for book in (folder for folder in listdir(const.directory) if isdir(f'{const.directory}/{folder}') and folder not in self.db.get_book_directories()):
+            self.db.add_book(book, book)
+        # change search_panel filters
+        # filter results to be time > scan_time
 
 
     def random_select(self):
@@ -202,6 +220,21 @@ class Home(QMainWindow, Ui_MainWindow):
 
 
 
+    def resizeEvent(self, event):
+        self.resize_gallery(event.size().width())
+
+
+
+    def resize_gallery(self, window_width: int):
+        """Resizes all the spines in the gallery when the window is resized.
+        Mainly because I can't figure out how to get it to do this automatically with highdpiscaling
+        """
+        for i in reversed(range(self.bookshelf.count())):
+            spine = self.bookshelf.itemAt(i).widget()
+            spine.resize(window_width)
+
+
+
     def select(self, source, event=None):
         """Selects one of the books only.
 
@@ -213,7 +246,7 @@ class Home(QMainWindow, Ui_MainWindow):
             self.reset_selected()
             self.selected = source
             self.highlight(source)
-            self.signals.populate_details.emit(source.image, source.id_)
+            self.signals.populate_details.emit(source.loaded_image, source.id_)
 
 
 

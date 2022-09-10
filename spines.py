@@ -33,6 +33,7 @@ class BookSpine(QtWidgets.QFrame):
         self.title = title
         self.folder = folder
         self.image = None
+        self.loaded_image = None
         self.scale = QtWidgets.QDesktopWidget().screenGeometry(0).width() / 1920
 
         self.setup_frame()
@@ -56,17 +57,17 @@ class BookSpine(QtWidgets.QFrame):
         self.setLayout(self.layout)
 
     def setup_img(self):
-        img = QtWidgets.QLabel()
-        img.setFixedWidth(int(const.Spines.IMG_WIDTH * self.scale))
-        img.setFixedHeight(int(const.Spines.IMG_HEIGHT * self.scale))
-        img.setAlignment(QtCore.Qt.AlignCenter)
-        img.setContentsMargins(0, 0, 0, 0)
-        self.image = QPixmap(f'{const.directory}/{self.folder}/{listdir(f"{const.directory}/{self.folder}/")[0]}')
-        self.image = self.image.scaledToHeight(int(const.Spines.IMG_HEIGHT * self.scale), QtCore.Qt.SmoothTransformation)
-        crop = QtCore.QRect((self.image.width() - int(const.Spines.IMG_WIDTH * self.scale)) / 2, (self.image.height() - int(const.Spines.IMG_HEIGHT * self.scale)) / 2, int(const.Spines.IMG_WIDTH * self.scale), int(const.Spines.IMG_HEIGHT * self.scale))
-        self.image = self.image.copy(crop)
-        img.setPixmap(self.image)
-        self.layout.addWidget(img)
+        self.image = QtWidgets.QLabel()
+        self.image.setFixedWidth(int(const.Spines.IMG_WIDTH * self.scale))
+        self.image.setFixedHeight(int(const.Spines.IMG_HEIGHT * self.scale))
+        self.image.setAlignment(QtCore.Qt.AlignCenter)
+        self.image.setContentsMargins(0, 0, 0, 0)
+        self.loaded_image = QPixmap(f'{const.directory}/{self.folder}/{listdir(f"{const.directory}/{self.folder}/")[0]}')
+        img = self.loaded_image.scaledToWidth(int(const.Spines.IMG_WIDTH * self.scale), QtCore.Qt.SmoothTransformation)
+        crop = QtCore.QRect((img.width() - int(const.Spines.IMG_WIDTH * self.scale)) / 2, (img.height() - int(const.Spines.IMG_HEIGHT * self.scale)) / 2, int(const.Spines.IMG_WIDTH * self.scale), int(const.Spines.IMG_HEIGHT * self.scale))
+        img = img.copy(crop)
+        self.image.setPixmap(img)
+        self.layout.addWidget(self.image)
 
     def setup_title(self):
         self.title_label = QtWidgets.QLabel()
@@ -86,6 +87,19 @@ class BookSpine(QtWidgets.QFrame):
     def update_title(self, title: str):
         self.title = title
         self.title_label.setText(self.title)
+
+    def resize(self, window_width: int):
+        self.scale = window_width / 1920
+        self.setup_frame()
+
+        self.image.setFixedWidth(int(const.Spines.IMG_WIDTH * self.scale))
+        self.image.setFixedHeight(int(const.Spines.IMG_HEIGHT * self.scale))
+        img = self.loaded_image.scaledToWidth(int(const.Spines.IMG_WIDTH * self.scale), QtCore.Qt.SmoothTransformation)
+        crop = QtCore.QRect((img.width() - int(const.Spines.IMG_WIDTH * self.scale)) / 2, (img.height() - int(const.Spines.IMG_HEIGHT * self.scale)) / 2, int(const.Spines.IMG_WIDTH * self.scale), int(const.Spines.IMG_HEIGHT * self.scale))
+        img = img.copy(crop)
+        self.image.setPixmap(img)
+
+        self.title_label.setFixedWidth(int(const.Spines.IMG_WIDTH * self.scale))
 
     def __eq__(self, compare):
         if isinstance(compare, BookSpine) and self.id_ == compare.id_:

@@ -345,32 +345,32 @@
     <property name="title">
      <string>File</string>
     </property>
-    <addaction name="actionScan_For_New_Books"/>
-    <addaction name="actionChange_Directory"/>
+    <addaction name="scan_button"/>
+    <addaction name="change_directory_button"/>
     <addaction name="separator"/>
-    <addaction name="actionBackup_Database"/>
+    <addaction name="backup_database_button"/>
     <addaction name="actionLoad_Database"/>
    </widget>
    <addaction name="menuFile"/>
   </widget>
-  <action name="actionScan_For_New_Books">
+  <action name="scan_button">
    <property name="text">
     <string>Scan For New Books</string>
    </property>
   </action>
-  <action name="actionChange_Directory">
+  <action name="change_directory_button">
    <property name="text">
     <string>Change Directory</string>
    </property>
   </action>
-  <action name="actionBackup_Database">
+  <action name="backup_database_button">
    <property name="text">
     <string>Backup Database</string>
    </property>
   </action>
   <action name="actionLoad_Database">
    <property name="text">
-    <string>Load Database</string>
+    <string>load_database_button</string>
    </property>
   </action>
  </widget>

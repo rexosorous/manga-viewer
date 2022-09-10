@@ -14,6 +14,7 @@ import signals
 
 
 QApplication.setAttribute(Qt.AA_EnableHighDpiScaling, True)
+QApplication.setAttribute(Qt.AA_UseHighDpiPixmaps, True)
 app = QApplication(sys.argv)
 
 sigs = signals.Signals()

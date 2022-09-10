@@ -6,6 +6,7 @@ from PyQt5.QtWidgets import QListWidgetItem
 
 # local modules
 import constants as const
+from datetime import datetime
 import exceptions
 
 
@@ -405,6 +406,32 @@ class DBHandler:
 
 
 
+    def add_book(self, name, directory, alt_name='NULL', series='NULL', series_order='NULL', pages='NULL', rating='NULL', notes='NULL'):
+        """Creates a new book entry
+        """
+        '''
+                id INTEGER,
+                name TEXT,
+                alt_name TEXT,
+                series INTEGER,
+                series_order REAL,
+                pages INTEGER,
+                rating INTEGER,
+                notes TEXT,
+                date_added REAL, -- datetime.datetime.now().timestamp()
+                directory TEXT
+        '''
+        self.db.execute('SELECT id FROM books WHERE id=(SELECT MAX(id) FROM books)')
+        id_ = self.db.fetchone()['id']
+        if alt_name != 'NULL':
+            alt_name = f'"{alt_name}"'
+        if notes != 'NULL':
+            notes = f'"{notes}"'
+        self.db.execute(f'INSERT INTO books VALUES({id_}, "{name}", {alt_name}, {series}, {series_order}, {pages}, {rating}, {notes}, {datetime.now().timestamp()}, "{directory}")')
+        self.conn.commit()
+
+
+
     def update_book(self, data: dict):
         """Updates a book's data
 
@@ -429,3 +456,16 @@ class DBHandler:
             self.db.execute('INSERT INTO books_tags VALUES(?, ?)', (data['id'], tag))
 
         self.conn.commit()
+
+
+
+    def get_book_directories(self):
+        """Used to get a list of all the directories for books in the database
+
+        Only really used for Home.scan_directory()
+
+        Returns:
+            [str]
+        """
+        self.db.execute('SELECT directory FROM books')
+        return [x['directory'] for x in self.db.fetchall()]
