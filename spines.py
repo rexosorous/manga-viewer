@@ -1,5 +1,6 @@
 # standard libraries
 from os import listdir
+from datetime import datetime
 
 # dependencies
 from PyQt5 import QtCore
@@ -26,12 +27,22 @@ class BookSpine(QtWidgets.QFrame):
         title (str)
         layout (QVBoxLayout)
     """
-    def __init__(self, book_id: int, title: str, folder: str):
+    def __init__(self, book_id: int, title: str, alt_title: str, series: int, series_order: float, pages: int, rating: int, notes: str, date_added: datetime, folder: str):
         super().__init__()
         self.layout = QtWidgets.QVBoxLayout()
+
+        # db fields
         self.id_ = book_id
         self.title = title
+        self.alt_title = alt_title
+        self.series = series
+        self.series_order = series_order
+        self.pages = pages
+        self.rating = rating
+        self.notes = notes
+        self.date_added = date_added
         self.folder = folder
+
         self.image = None
         self.loaded_image = None
         self.scale = QtWidgets.QDesktopWidget().screenGeometry(0).width() / 1920

@@ -196,7 +196,7 @@ class DBHandler:
         Dynamically builds a sqlite3 query string based on the information provided by filters
 
         Args:
-            filters (dict, list, optional): filters to filter by (either a dict from search panel or a list from sort_gallery)
+            filters (dict, optional): filters to filter by from search panel
             sort_by (int): the way the books are to be sorted
 
         Returns:
@@ -215,12 +215,12 @@ class DBHandler:
         }
 
         if not filters: # if filters are not sent (like during startup), just give a list of all the books back
-            self.db.execute('SELECT books.id, books.name, books.directory FROM books ORDER BY ' + sort_query[sort_by])
+            self.db.execute('SELECT * FROM books ORDER BY ' + sort_query[sort_by])
             return self.db.fetchall()
 
         if isinstance(filters, list): # if we're re-sorting ONLY the books that are displayed in the gallery
-            displayed_IDs = ' OR '.join([f'books.id={x}' for x in filters])
-            self.db.execute('SELECT books.id, books.name, books.directory FROM books WHERE ' + displayed_IDs + ' ORDER BY ' + sort_query[sort_by])
+            displayed_IDs = ', '.join([str(x) for x in filters])
+            self.db.execute(f'SELECT * FROM books WHERE books.id IN ({displayed_IDs}) ORDER BY {sort_query[sort_by]}')
             return self.db.fetchall()
 
 
@@ -271,12 +271,12 @@ class DBHandler:
 
         # check if there are even any search filters
         if not and_block and not not_block and not or_block:
-            self.db.execute('SELECT books.id, books.name, books.directory FROM books ORDER BY ' + sort_query[sort_by])
+            self.db.execute('SELECT * FROM books ORDER BY ' + sort_query[sort_by])
             return self.db.fetchall()
 
 
         # start building the query string
-        base_query = ('SELECT DISTINCT books.id, books.name, books.directory FROM books\n'
+        base_query = ('SELECT DISTINCT * FROM books\n'
         '\tLEFT JOIN books_artists ON books_artists.bookID=books.id\n'
         '\tLEFT JOIN books_genres ON books_genres.bookID=books.id\n'
         '\tLEFT JOIN books_tags ON books_tags.bookID=books.id')
@@ -287,7 +287,7 @@ class DBHandler:
         or_string = '\n\tOR '.join(or_block)
 
         query = base_query + and_string + count_string + not_string
-        query = ('SELECT DISTINCT books.id, books.name, books.directory FROM books\n'
+        query = ('SELECT DISTINCT * FROM books\n'
         '\tINNER JOIN\n\t\t(' + query.replace("\n", "\n\t\t") + ') AS temp ON temp.id=books.id\n'
         '\tLEFT JOIN books_artists ON books_artists.bookID=books.id\n'
         '\tLEFT JOIN books_genres ON books_genres.bookID=books.id\n'
