@@ -90,6 +90,9 @@ class Home(QMainWindow, Ui_MainWindow):
         # dropdowns
         self.sort_by.currentIndexChanged.connect(self.sort_gallery)
 
+        # basic search
+        self.search_bar.textChanged.connect(self.search_gallery)
+
         # buttons
         self.details_button.clicked.connect(lambda : [self.details_panel.setVisible(True), self.search_panel.setVisible(False), self.metadata_panel.setVisible(False)])
         self.advanced_search_button.clicked.connect(lambda : [self.details_panel.setVisible(False), self.search_panel.setVisible(True), self.metadata_panel.setVisible(False)])
@@ -127,7 +130,7 @@ class Home(QMainWindow, Ui_MainWindow):
         """Creates objects for the books based on certain search parameters and then populates the gallery
 
         Args:
-            filters (dict, optional): filters to filter by from serah panel
+            filters (dict, optional): filters to filter by from search panel
         """
         self.books = []
         for book in self.db.get_books(filters, self.sort_by.currentIndex()):
@@ -154,6 +157,8 @@ class Home(QMainWindow, Ui_MainWindow):
         row_pos = 0
         col_pos = 0
         for book in self.books:
+            if book.hide_:
+                continue
             self.bookshelf.addWidget(book, col_pos, row_pos)
 
             # calculate next position
@@ -178,6 +183,22 @@ class Home(QMainWindow, Ui_MainWindow):
             self.select(new_select)
         else:
             self.reset_selected()
+
+
+
+    def search_gallery(self, search_term: str):
+        '''Basic search
+
+        Only searches titles and alt_titles of what's in the gallery. So if there's already a filter applied, it won't show books beyond the filter.
+        '''
+        for book in self.books:
+            if search_term.lower() in book.title.lower():
+                book.hide_ = False
+            elif book.alt_title and search_term.lower() in book.alt_title.lower():
+                book.hide_ = False
+            else:
+                book.hide_ = True
+        self.populate_gallery()
 
 
 
@@ -228,7 +249,7 @@ class Home(QMainWindow, Ui_MainWindow):
                 continue
 
             info = self.db.get_book_info(spine.id_)
-            spine.update_title(info['name'])
+            spine.update_title(info['name']) # TODO: make sure it updates more than just the title
 
 
 

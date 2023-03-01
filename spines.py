@@ -46,6 +46,7 @@ class BookSpine(QtWidgets.QFrame):
         self.image = None
         self.loaded_image = None
         self.scale = QtWidgets.QDesktopWidget().screenGeometry(0).width() / 1920
+        self.hide_ = False # hide (without _) is used by the QFrame that this is a part of. used for basic search to "remove" entries while keeping them in memory
 
         self.setup_frame()
         self.setup_layout()
