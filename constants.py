@@ -3,7 +3,7 @@ from PyQt5 import QtGui
 
 
 
-directory = r'C:\Users\J-Zach Loke\Programming\manga-viewer\test_library'
+directory = 'test_library'
 
 
 

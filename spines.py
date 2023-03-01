@@ -64,7 +64,7 @@ class BookSpine(QtWidgets.QFrame):
         self.image.setContentsMargins(0, 0, 0, 0)
         self.loaded_image = QPixmap(f'{const.directory}/{self.folder}/{listdir(f"{const.directory}/{self.folder}/")[0]}')
         img = self.loaded_image.scaledToWidth(int(const.Spines.IMG_WIDTH * self.scale), QtCore.Qt.SmoothTransformation)
-        crop = QtCore.QRect((img.width() - int(const.Spines.IMG_WIDTH * self.scale)) / 2, (img.height() - int(const.Spines.IMG_HEIGHT * self.scale)) / 2, int(const.Spines.IMG_WIDTH * self.scale), int(const.Spines.IMG_HEIGHT * self.scale))
+        crop = QtCore.QRect(int((img.width() - const.Spines.IMG_WIDTH * self.scale) / 2), int((img.height() - const.Spines.IMG_HEIGHT * self.scale) / 2), int(const.Spines.IMG_WIDTH * self.scale), int(const.Spines.IMG_HEIGHT * self.scale))
         img = img.copy(crop)
         self.image.setPixmap(img)
         self.layout.addWidget(self.image)
@@ -95,7 +95,7 @@ class BookSpine(QtWidgets.QFrame):
         self.image.setFixedWidth(int(const.Spines.IMG_WIDTH * self.scale))
         self.image.setFixedHeight(int(const.Spines.IMG_HEIGHT * self.scale))
         img = self.loaded_image.scaledToWidth(int(const.Spines.IMG_WIDTH * self.scale), QtCore.Qt.SmoothTransformation)
-        crop = QtCore.QRect((img.width() - int(const.Spines.IMG_WIDTH * self.scale)) / 2, (img.height() - int(const.Spines.IMG_HEIGHT * self.scale)) / 2, int(const.Spines.IMG_WIDTH * self.scale), int(const.Spines.IMG_HEIGHT * self.scale))
+        crop = QtCore.QRect(int((img.width() - const.Spines.IMG_WIDTH * self.scale) / 2), int((img.height() - const.Spines.IMG_HEIGHT * self.scale) / 2), int(const.Spines.IMG_WIDTH * self.scale), int(const.Spines.IMG_HEIGHT * self.scale))
         img = img.copy(crop)
         self.image.setPixmap(img)
 

@@ -62,7 +62,7 @@ class DBHandler:
         self.db.execute('''
             CREATE TABLE IF NOT EXISTS books
             (
-                id INTEGER,
+                id INTEGER PRIMARY KEY,
                 name TEXT,
                 alt_name TEXT,
                 series INTEGER,
@@ -78,7 +78,7 @@ class DBHandler:
         self.db.execute('''
             CREATE TABLE IF NOT EXISTS artists
             (
-                id INTEGER,
+                id INTEGER PRIMARY KEY,
                 name TEXT,
                 alt_name TEXT
             )
@@ -87,7 +87,7 @@ class DBHandler:
         self.db.execute('''
             CREATE TABLE IF NOT EXISTS series
             (
-                id INTEGER,
+                id INTEGER PRIMARY KEY,
                 name TEXT,
                 alt_name TEXT
             )
@@ -96,7 +96,7 @@ class DBHandler:
         self.db.execute('''
             CREATE TABLE IF NOT EXISTS genres
             (
-                id INTEGER,
+                id INTEGER PRIMARY KEY,
                 name TEXT,
                 description TEXT
             )
@@ -105,7 +105,7 @@ class DBHandler:
         self.db.execute('''
             CREATE TABLE IF NOT EXISTS tags
             (
-                id INTEGER,
+                id INTEGER PRIMARY KEY,
                 name TEXT,
                 description TEXT
             )
@@ -360,9 +360,7 @@ class DBHandler:
         if self.db.fetchone():
             raise exceptions.DuplicateEntry
 
-        self.db.execute(f'SELECT id FROM {table} ORDER BY id DESC LIMIT 1')
-        last_id = self.db.fetchone()
-        self.db.execute(f'INSERT INTO {table} VALUES({last_id["id"]+1}, "{name}", "")')
+        self.db.execute(f'INSERT INTO {table} VALUES("{name}", "")')
         self.conn.commit()
 
 
@@ -421,13 +419,11 @@ class DBHandler:
                 date_added REAL, -- datetime.datetime.now().timestamp()
                 directory TEXT
         '''
-        self.db.execute('SELECT id FROM books WHERE id=(SELECT MAX(id) FROM books)')
-        id_ = self.db.fetchone()['id']
         if alt_name != 'NULL':
             alt_name = f'"{alt_name}"'
         if notes != 'NULL':
             notes = f'"{notes}"'
-        self.db.execute(f'INSERT INTO books VALUES({id_}, "{name}", {alt_name}, {series}, {series_order}, {pages}, {rating}, {notes}, {datetime.now().timestamp()}, "{directory}")')
+        self.db.execute(f'INSERT INTO books VALUES("{name}", {alt_name}, {series}, {series_order}, {pages}, {rating}, {notes}, {datetime.now().timestamp()}, "{directory}")')
         self.conn.commit()
 
 
