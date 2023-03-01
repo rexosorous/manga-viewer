@@ -249,7 +249,7 @@ class Home(QMainWindow, Ui_MainWindow):
                 continue
 
             info = self.db.get_book_info(spine.id_)
-            spine.update_title(info['name']) # TODO: make sure it updates more than just the title
+            spine.set_db_data(*info)
 
 
 

@@ -66,4 +66,4 @@ class Sort():
     PAGES_DESC = 5
     DATE_ASC = 6
     DATE_DESC = 7
-    RAND = 8
+    RANDOM = 8

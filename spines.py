@@ -31,7 +31,18 @@ class BookSpine(QtWidgets.QFrame):
         super().__init__()
         self.layout = QtWidgets.QVBoxLayout()
 
-        # db fields
+        self.image = None
+        self.loaded_image = None
+        self.scale = QtWidgets.QDesktopWidget().screenGeometry(0).width() / 1920
+        self.hide_ = False # hide (without _) is used by the QFrame that this is a part of. used for basic search to "remove" entries while keeping them in memory
+
+        self.setup_frame()
+        self.setup_layout()
+        self.setup_img()
+        self.setup_title()
+        self.set_db_data(book_id, title, alt_title, series, series_order, pages, rating, notes, date_added, folder)
+
+    def set_db_data(self, book_id: int, title: str, alt_title: str, series: int, series_order: float, pages: int, rating: int, notes: str, date_added: datetime, folder: str):
         self.id_ = book_id
         self.title = title
         self.alt_title = alt_title
@@ -43,15 +54,13 @@ class BookSpine(QtWidgets.QFrame):
         self.date_added = date_added
         self.folder = folder
 
-        self.image = None
-        self.loaded_image = None
-        self.scale = QtWidgets.QDesktopWidget().screenGeometry(0).width() / 1920
-        self.hide_ = False # hide (without _) is used by the QFrame that this is a part of. used for basic search to "remove" entries while keeping them in memory
-
-        self.setup_frame()
-        self.setup_layout()
-        self.setup_img()
-        self.setup_title()
+        # update the title and image if they were changed
+        self.title_label.setText(self.title)
+        self.loaded_image = QPixmap(f'{const.directory}/{self.folder}/{listdir(f"{const.directory}/{self.folder}/")[0]}')
+        img = self.loaded_image.scaledToWidth(int(const.Spines.IMG_WIDTH * self.scale), QtCore.Qt.SmoothTransformation)
+        crop = QtCore.QRect(int((img.width() - const.Spines.IMG_WIDTH * self.scale) / 2), int((img.height() - const.Spines.IMG_HEIGHT * self.scale) / 2), int(const.Spines.IMG_WIDTH * self.scale), int(const.Spines.IMG_HEIGHT * self.scale))
+        img = img.copy(crop)
+        self.image.setPixmap(img)
 
     def setup_frame(self):
         self.setFixedWidth(int(const.Spines.WIDTH * self.scale))
@@ -74,11 +83,6 @@ class BookSpine(QtWidgets.QFrame):
         self.image.setFixedHeight(int(const.Spines.IMG_HEIGHT * self.scale))
         self.image.setAlignment(QtCore.Qt.AlignCenter)
         self.image.setContentsMargins(0, 0, 0, 0)
-        self.loaded_image = QPixmap(f'{const.directory}/{self.folder}/{listdir(f"{const.directory}/{self.folder}/")[0]}')
-        img = self.loaded_image.scaledToWidth(int(const.Spines.IMG_WIDTH * self.scale), QtCore.Qt.SmoothTransformation)
-        crop = QtCore.QRect(int((img.width() - const.Spines.IMG_WIDTH * self.scale) / 2), int((img.height() - const.Spines.IMG_HEIGHT * self.scale) / 2), int(const.Spines.IMG_WIDTH * self.scale), int(const.Spines.IMG_HEIGHT * self.scale))
-        img = img.copy(crop)
-        self.image.setPixmap(img)
         self.layout.addWidget(self.image)
 
     def setup_title(self):
@@ -90,15 +94,11 @@ class BookSpine(QtWidgets.QFrame):
         self.title_label.setPalette(const.Palettes.SECONDARY)
         self.title_label.setAutoFillBackground(True)
         self.title_label.setWordWrap(True)
-        self.title_label.setText(self.title)
+        # self.title_label.setText(self.title)
         titlefont = QFont()
         titlefont.setPointSize(14)
         self.title_label.setFont(titlefont)
         self.layout.addWidget(self.title_label)
-
-    def update_title(self, title: str):
-        self.title = title
-        self.title_label.setText(self.title)
 
     def resize(self, window_width: int):
         self.scale = window_width / 1920

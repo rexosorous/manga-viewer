@@ -211,7 +211,7 @@ class DBHandler:
             const.Sort.PAGES_DESC: 'books.pages DESC',
             const.Sort.DATE_ASC: 'books.date_added ASC',
             const.Sort.DATE_DESC: 'books.date_added DESC',
-            const.Sort.RAND: 'random()'
+            const.Sort.RANDOM: 'random()'
         }
 
         if not filters: # if filters are not sent (like during startup), just give a list of all the books back
@@ -276,7 +276,7 @@ class DBHandler:
 
 
         # start building the query string
-        base_query = ('SELECT DISTINCT * FROM books\n'
+        base_query = ('SELECT DISTINCT books.* FROM books\n'
         '\tLEFT JOIN books_artists ON books_artists.bookID=books.id\n'
         '\tLEFT JOIN books_genres ON books_genres.bookID=books.id\n'
         '\tLEFT JOIN books_tags ON books_tags.bookID=books.id')
@@ -287,7 +287,7 @@ class DBHandler:
         or_string = '\n\tOR '.join(or_block)
 
         query = base_query + and_string + count_string + not_string
-        query = ('SELECT DISTINCT * FROM books\n'
+        query = ('SELECT DISTINCT books.* FROM books\n'
         '\tINNER JOIN\n\t\t(' + query.replace("\n", "\n\t\t") + ') AS temp ON temp.id=books.id\n'
         '\tLEFT JOIN books_artists ON books_artists.bookID=books.id\n'
         '\tLEFT JOIN books_genres ON books_genres.bookID=books.id\n'
