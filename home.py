@@ -112,11 +112,19 @@ class Home(QMainWindow, Ui_MainWindow):
     def scan_directory(self):
         """Scans the manga directory for any new entries, adds the new books to the db with near blank fields, and then sets the search filter to only show the new books so the user can edit the metadata
         """
-        scan_time = datetime.now().timestamp()
+        scan_time = datetime.now()
         for book in (folder for folder in listdir(const.directory) if isdir(f'{const.directory}/{folder}') and folder not in self.db.get_book_directories()):
             self.db.add_book(book, book, pages=len(listdir(f'{const.directory}/{book}')))
-        # change search_panel filters
-        # filter results to be time > scan_time
+
+        # filter gallery to show only the the new books (using date filtering)
+        # show search_panel with the filter we set
+        self.details_panel.setVisible(False)
+        self.search_panel.setVisible(True)
+        self.metadata_panel.setVisible(False)
+        self.search_panel.clear_fields()
+        self.search_panel.date_low.setDateTime(scan_time)
+        self.search_panel.submit()
+
 
 
     def random_select(self):
