@@ -114,7 +114,7 @@ class Home(QMainWindow, Ui_MainWindow):
         """
         scan_time = datetime.now().timestamp()
         for book in (folder for folder in listdir(const.directory) if isdir(f'{const.directory}/{folder}') and folder not in self.db.get_book_directories()):
-            self.db.add_book(book, book)
+            self.db.add_book(book, book, pages=len(listdir(f'{const.directory}/{book}')))
         # change search_panel filters
         # filter results to be time > scan_time
 
