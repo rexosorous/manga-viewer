@@ -50,16 +50,16 @@ class MetadataPanel(QFrame, Ui_metadata_panel):
 
     def connect_events(self):
         # submit buttons
-        self.artists_submit.clicked.connect(partial(self.create_entry, self.artists_text))
-        self.series_submit.clicked.connect(partial(self.create_entry, self.series_text))
-        self.genres_submit.clicked.connect(partial(self.create_entry, self.genres_text))
-        self.tags_submit.clicked.connect(partial(self.create_entry, self.tags_text))
+        self.artists_submit.clicked.connect(partial(self.create_metadata, self.artists_text))
+        self.series_submit.clicked.connect(partial(self.create_metadata, self.series_text))
+        self.genres_submit.clicked.connect(partial(self.create_metadata, self.genres_text))
+        self.tags_submit.clicked.connect(partial(self.create_metadata, self.tags_text))
 
         # pressing enter in line edits (has the same functionality as the submit button)
-        self.artists_text.returnPressed.connect(partial(self.create_entry, self.artists_text))
-        self.series_text.returnPressed.connect(partial(self.create_entry, self.series_text))
-        self.genres_text.returnPressed.connect(partial(self.create_entry, self.genres_text))
-        self.tags_text.returnPressed.connect(partial(self.create_entry, self.tags_text))
+        self.artists_text.returnPressed.connect(partial(self.create_metadata, self.artists_text))
+        self.series_text.returnPressed.connect(partial(self.create_metadata, self.series_text))
+        self.genres_text.returnPressed.connect(partial(self.create_metadata, self.genres_text))
+        self.tags_text.returnPressed.connect(partial(self.create_metadata, self.tags_text))
 
         # right click context menu
         self.artists_list.contextMenuEvent = partial(self.context_menu, self.artists_list)
@@ -97,7 +97,7 @@ class MetadataPanel(QFrame, Ui_metadata_panel):
 
 
 
-    def create_entry(self, text_area, event=None):
+    def create_metadata(self, text_area, event=None):
         """Attempts to create a new metadata entry.
 
         If an entry with that name already exists, display an error popup window.
@@ -109,7 +109,7 @@ class MetadataPanel(QFrame, Ui_metadata_panel):
         try:
             if text_area.text():
                 table = text_area.objectName()[:-5]
-                self.db.create_entry(table, text_area.text())
+                self.db.create_metadata(table, text_area.text())
                 text_area.clear()
                 self.signals.update_metadata.emit()
         except exceptions.DuplicateEntry:
@@ -152,7 +152,7 @@ class MetadataPanel(QFrame, Ui_metadata_panel):
                             return
 
                         elif yes_button and new_name:
-                            self.db.rename_entry(selected.table, selected.id_, new_name)
+                            self.db.rename_metadata(selected.table, selected.id_, new_name)
                             self.signals.update_metadata.emit()
                             return
 
@@ -175,5 +175,5 @@ class MetadataPanel(QFrame, Ui_metadata_panel):
                     if response == no:
                         return
 
-                    self.db.delete_entry(selected.table, selected.id_)
+                    self.db.delete_metadata(selected.table, selected.id_)
                     self.signals.update_metadata.emit()

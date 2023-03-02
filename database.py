@@ -300,6 +300,17 @@ class DBHandler:
 
 
 
+    def get_book(self, book_id: int):
+        """Gets all the data in table book. should be used for just getting basic info. for all info use get_book_info()
+
+        Args:
+            book_id (int)
+        """
+        self.db.execute(f'SELECT * FROM books WHERE books.id={book_id}')
+        return self.db.fetchone()
+
+
+
     def get_book_info(self, book_id: int):
         """Returns all relevant information about a book.
 
@@ -343,7 +354,7 @@ class DBHandler:
 
 
 
-    def create_entry(self, table: str, name: str):
+    def create_metadata(self, table: str, name: str):
         """Creates entries with the given information into the given table
 
         Note:
@@ -360,12 +371,12 @@ class DBHandler:
         if self.db.fetchone():
             raise exceptions.DuplicateEntry
 
-        self.db.execute(f'INSERT INTO {table} VALUES("{name}", "")')
+        self.db.execute(f'INSERT INTO {table}(name) VALUES("{name}")')
         self.conn.commit()
 
 
 
-    def delete_entry(self, table: str, id_: int):
+    def delete_metadata(self, table: str, id_: int):
         """Deletes an entry and all references to that entry from all tables
 
         Args:
@@ -391,7 +402,7 @@ class DBHandler:
 
 
 
-    def rename_entry(self, table: str, id_: int, new_name: str):
+    def rename_metadata(self, table: str, id_: int, new_name: str):
         """Renames a metadata entry
 
         Args:
@@ -423,7 +434,7 @@ class DBHandler:
             alt_name = f'"{alt_name}"'
         if notes != 'NULL':
             notes = f'"{notes}"'
-        self.db.execute(f'INSERT INTO books VALUES("{name}", {alt_name}, {series}, {series_order}, {pages}, {rating}, {notes}, {datetime.now().timestamp()}, "{directory}")')
+        self.db.execute(f'INSERT INTO books(name, alt_name, series, series_order, pages, rating, notes, date_added, directory) VALUES("{name}", {alt_name}, {series}, {series_order}, {pages}, {rating}, {notes}, {datetime.now().timestamp()}, "{directory}")')
         self.conn.commit()
 
 

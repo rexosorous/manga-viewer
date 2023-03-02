@@ -104,7 +104,7 @@ class Home(QMainWindow, Ui_MainWindow):
         self.bookshelf_area.mousePressEvent = self.reset_selected
 
         # signals
-        self.signals.update_spines.connect(self.update_gallery)
+        self.signals.update_spine.connect(self.update_spine)
         self.signals.search_advanced.connect(self.generate_books)
 
 
@@ -237,19 +237,13 @@ class Home(QMainWindow, Ui_MainWindow):
 
 
 
-    def update_gallery(self):
-        """Updates all spines in the gallery when users change a book's details.
-
-        This is to ensure the title displayed is always accurate.
+    def update_spine(self, book_id):
+        """Updates a spine that was changed in the details panel
         """
-        for i in reversed(range(self.bookshelf.count())):
-            spine = self.bookshelf.itemAt(i).widget()
-            if isinstance(spine, spines.BlankSpine):
-                # don't update blank spines
-                continue
-
-            info = self.db.get_book_info(spine.id_)
-            spine.set_db_data(*info)
+        for book in self.books:
+            if book.id_ == book_id:
+                book.set_db_data(*self.db.get_book(book_id).values())
+                break
 
 
 

@@ -19,6 +19,6 @@ class Signals(QObject):
     close_book_signal = pyqtSignal()
     search_advanced = pyqtSignal(object)
     update_metadata = pyqtSignal()
-    update_spines = pyqtSignal()
+    update_spine = pyqtSignal(int)
     populate_details = pyqtSignal(object, int)
     depopulate_details = pyqtSignal()

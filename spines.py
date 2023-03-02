@@ -127,3 +127,8 @@ class BlankSpine(QtWidgets.QFrame):
         super().__init__()
         self.setFixedWidth(const.Spines.WIDTH)
         self.setFixedHeight(const.Spines.HEIGHT)
+
+    def resize(self, window_width: int):
+        scale = window_width / 1920
+        self.setFixedWidth(int(const.Spines.WIDTH * scale))
+        self.setFixedHeight(int(const.Spines.HEIGHT * scale))

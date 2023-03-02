@@ -295,7 +295,7 @@ class DetailsPanel(QFrame, Ui_details_panel):
 
         # update info
         self.db.update_book(data)
-        self.signals.update_spines.emit()
+        self.signals.update_spine.emit(data['id'])
 
         # inform user of successful operation
         popup = QMessageBox()
