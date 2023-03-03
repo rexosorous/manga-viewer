@@ -2,11 +2,14 @@
 from functools import partial
 from os import listdir
 from os.path import isdir
+from os.path import relpath
+from shutil import rmtree
 import random
 
 # dependencies
 from PyQt5.QtWidgets import QMainWindow
 from PyQt5.QtWidgets import QMenu
+from PyQt5.QtWidgets import QMessageBox
 
 # local modules
 import constants as const
@@ -106,6 +109,8 @@ class Home(QMainWindow, Ui_MainWindow):
         # signals
         self.signals.update_spine.connect(self.update_spine)
         self.signals.search_advanced.connect(self.generate_books)
+        self.signals.delete_book_db.connect(self.delete_book_db) # from spines context menu
+        self.signals.delete_book_disk.connect(self.delete_book_disk) # from spines context menu
 
 
 
@@ -143,7 +148,7 @@ class Home(QMainWindow, Ui_MainWindow):
         self.books = []
         for book in self.db.get_books(filters, self.sort_by.currentIndex()):
             # set up frame
-            spine = spines.BookSpine(*book.values())
+            spine = spines.BookSpine(self.signals, *book.values())
 
             # add the new frames to the list
             self.books.append(spine)
@@ -335,18 +340,57 @@ class Home(QMainWindow, Ui_MainWindow):
 
 
 
+    def delete_book_db(self, book: spines.BookSpine):
+        popup = QMessageBox()
+        popup.setIcon(QMessageBox.Warning)
+        popup.setWindowTitle('Confirm')
+        popup.setText(f'Are you sure you want to delete {book.title} from the database?')
+        popup.setInformativeText('Note: this will not delete the files from disk.')
+        popup.setStandardButtons(QMessageBox.Ok | QMessageBox.Cancel)
+        selection = popup.exec_()
+        if selection == QMessageBox.Ok:
+            self.db.delete_book(book.id_)
+            self.reset_selected()
+            self.books.remove(book)
+            self.populate_gallery()
+
+
+
+    def delete_book_disk(self, book: spines.BookSpine):
+        popup = QMessageBox()
+        popup.setIcon(QMessageBox.Warning)
+        popup.setWindowTitle('Confirm')
+        popup.setText(f'Are you sure you want to delete {book.title} from both the DB and disk?')
+        popup.setInformativeText('Note: THIS CANNOT BE UNDONE. FILES CANNOT BE RECOVERED')
+        popup.setStandardButtons(QMessageBox.Ok | QMessageBox.Cancel)
+        selection = popup.exec_()
+        if selection == QMessageBox.Ok:
+            self.db.delete_book(book.id_)
+            self.reset_selected()
+            self.books.remove(book)
+            rmtree(relpath(f'{const.directory}/{book.folder}'))
+            self.populate_gallery()
+
+
+
     def context_menu(self, event):
         """Opens a context menu for the books.
 
-        "Edit": edits the metadata of all currently selected books
-        "Open Containing Folder": opens windows explorer for the most recently selected book
+        "Clear Filter": removes all filters from the search_panel to show all books
+        "Clear Selected": deselects the currently selected book
 
         Args:
             event (QMouseEvent): The event that was emitted. Unused, but required by PyQt5
         """
         menu = QMenu()
-        edit = menu.addAction('Edit')
-        open_ = menu.addAction('Open Containing Folder')
+        clear_filter = menu.addAction('Clear Filter')
+        clear_selected = menu.addAction('Clear Selected')
         if (selection := menu.exec_(event.globalPos())):
-            # execute
-            print(selection.text())
+            if selection == clear_filter:
+                self.details_panel.setVisible(False)
+                self.search_panel.setVisible(True)
+                self.metadata_panel.setVisible(False)
+                self.search_panel.clear_fields()
+                self.search_panel.submit()
+            if selection == clear_selected:
+                self.reset_selected()

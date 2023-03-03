@@ -22,3 +22,5 @@ class Signals(QObject):
     update_spine = pyqtSignal(int)
     populate_details = pyqtSignal(object, int)
     depopulate_details = pyqtSignal()
+    delete_book_db = pyqtSignal(object)
+    delete_book_disk = pyqtSignal(object)

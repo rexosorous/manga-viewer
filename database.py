@@ -466,6 +466,20 @@ class DBHandler:
 
 
 
+    def delete_book(self, id_: int):
+        """Deletes a book from the DB and all references to it
+
+        Args:
+            id_ (int)
+        """
+        self.db.execute(f'DELETE FROM books WHERE id={id_}')
+        self.db.execute(f'DELETE FROM books_artists WHERE bookID={id_}')
+        self.db.execute(f'DELETE FROM books_genres WHERE bookID={id_}')
+        self.db.execute(f'DELETE FROM books_tags WHERE bookID={id_}')
+        self.conn.commit()
+
+
+
     def get_book_directories(self):
         """Used to get a list of all the directories for books in the database
 

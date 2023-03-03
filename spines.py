@@ -1,5 +1,7 @@
 # standard libraries
 from os import listdir
+from os import startfile
+from os.path import relpath
 from datetime import datetime
 
 # dependencies
@@ -7,6 +9,7 @@ from PyQt5 import QtCore
 from PyQt5 import QtWidgets
 from PyQt5.QtGui import QPixmap
 from PyQt5.QtGui import QFont
+from PyQt5.QtWidgets import QMenu
 
 # local modules
 import constants as const
@@ -27,14 +30,17 @@ class BookSpine(QtWidgets.QFrame):
         title (str)
         layout (QVBoxLayout)
     """
-    def __init__(self, book_id: int, title: str, alt_title: str, series: int, series_order: float, pages: int, rating: int, notes: str, date_added: datetime, folder: str):
+    def __init__(self, signals, book_id: int, title: str, alt_title: str, series: int, series_order: float, pages: int, rating: int, notes: str, date_added: datetime, folder: str):
         super().__init__()
         self.layout = QtWidgets.QVBoxLayout()
 
+        self.signals = signals
         self.image = None
         self.loaded_image = None
         self.scale = QtWidgets.QDesktopWidget().screenGeometry(0).width() / 1920
         self.hide_ = False # hide (without _) is used by the QFrame that this is a part of. used for basic search to "remove" entries while keeping them in memory
+
+        self.contextMenuEvent = self.context_menu
 
         self.setup_frame()
         self.setup_layout()
@@ -112,6 +118,28 @@ class BookSpine(QtWidgets.QFrame):
         self.image.setPixmap(img)
 
         self.title_label.setFixedWidth(int(const.Spines.IMG_WIDTH * self.scale))
+
+    def context_menu(self, event):
+        """Opens a context menu for the books.
+
+        "Open Containing Folder": opens windows explorer to the folder that contains this book
+        "Delete From DB": deletes this book from the database, but not from disk
+        "Delete From DB and Disk": deletes this book from the database and all files from disk.
+
+        Args:
+            event (QMouseEvent): The event that was emitted. Unused, but required by PyQt5
+        """
+        menu = QMenu()
+        open_ = menu.addAction('Open Containing Folder')
+        delete_db = menu.addAction('Delete From DB')
+        delete_disk = menu.addAction('Delete From DB and Disk')
+        if (selection := menu.exec_(event.globalPos())):
+            if selection == open_:
+                startfile(relpath(f'{const.directory}/{self.folder}'))
+            elif selection == delete_db:
+                self.signals.delete_book_db.emit(self)
+            elif selection == delete_disk:
+                self.signals.delete_book_disk.emit(self)
 
     def __eq__(self, compare):
         if isinstance(compare, BookSpine) and self.id_ == compare.id_:

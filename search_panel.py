@@ -1,9 +1,11 @@
 # standard libraries
+from datetime import datetime
 from functools import partial
 
 # dependencies
 from PyQt5.QtCore import QDate
 from PyQt5.QtWidgets import QFrame
+from PyQt5.QtWidgets import QMenu
 
 # local modules
 import constants as const
@@ -73,6 +75,10 @@ class SearchPanel(QFrame, Ui_search_panel):
         self.submit_button.clicked.connect(self.submit)
         self.clear_button.clicked.connect(self.populate_metadata)
 
+        # right click context menu
+        self.date_low.contextMenuEvent = partial(self.context_menu, self.date_low)
+        self.date_high.contextMenuEvent = partial(self.context_menu, self.date_high)
+
         # signals
         self.signals.update_metadata.connect(self.populate_metadata)
 
@@ -104,8 +110,8 @@ class SearchPanel(QFrame, Ui_search_panel):
         self.rating_toggle.setCheckState(2)
         self.pages_number_low.setValue(0)
         self.pages_number_high.setValue(0)
-        self.date_low.setDate(QDate(1, 1, 1))
-        self.date_high.setDate(QDate(1, 1, 1))
+        self.date_low.setDate(datetime.min)
+        self.date_high.setDate(datetime.min)
         self.genres_text.clear()
         self.genres_list.clear()
         self.tags_text.clear()
@@ -287,3 +293,23 @@ class SearchPanel(QFrame, Ui_search_panel):
                 filters[item.filter_type][list_picker[list_]].append(item.id_)
 
         self.signals.search_advanced.emit(filters)
+
+
+
+    def context_menu(self, source, event):
+        """Opens a context menu for the dates because properly setting / resetting them can be annoying
+
+        "Reset This Date": resets the date back to default
+        "Set To Now": sets this date to now
+
+        Args:
+            event (QMouseEvent): The event that was emitted. Unused, but required by PyQt5
+        """
+        menu = QMenu()
+        clear_selected = menu.addAction('Reset This Date')
+        set_now = menu.addAction('Set To Now')
+        if (selection := menu.exec_(event.globalPos())):
+            if selection == clear_selected:
+                source.setDateTime(datetime.min)
+            elif selection == set_now:
+                source.setDateTime(datetime.now())
