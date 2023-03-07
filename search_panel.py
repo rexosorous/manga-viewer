@@ -3,7 +3,6 @@ from datetime import datetime
 from functools import partial
 
 # dependencies
-from PyQt5.QtCore import QDate
 from PyQt5.QtWidgets import QFrame
 from PyQt5.QtWidgets import QMenu
 
@@ -110,8 +109,8 @@ class SearchPanel(QFrame, Ui_search_panel):
         self.rating_toggle.setCheckState(2)
         self.pages_number_low.setValue(0)
         self.pages_number_high.setValue(0)
-        self.date_low.setDate(datetime.min)
-        self.date_high.setDate(datetime.min)
+        self.date_low.setDateTime(self.date_low.minimumDateTime())
+        self.date_high.setDateTime(self.date_high.minimumDateTime())
         self.genres_text.clear()
         self.genres_list.clear()
         self.tags_text.clear()
@@ -310,6 +309,6 @@ class SearchPanel(QFrame, Ui_search_panel):
         set_now = menu.addAction('Set To Now')
         if (selection := menu.exec_(event.globalPos())):
             if selection == clear_selected:
-                source.setDateTime(datetime.min)
+                source.setDateTime(source.minimumDateTime())
             elif selection == set_now:
                 source.setDateTime(datetime.now())

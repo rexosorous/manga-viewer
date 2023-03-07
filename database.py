@@ -218,12 +218,6 @@ class DBHandler:
             self.db.execute('SELECT * FROM books ORDER BY ' + sort_query[sort_by])
             return self.db.fetchall()
 
-        if isinstance(filters, list): # if we're re-sorting ONLY the books that are displayed in the gallery
-            displayed_IDs = ', '.join([str(x) for x in filters])
-            self.db.execute(f'SELECT * FROM books WHERE books.id IN ({displayed_IDs}) ORDER BY {sort_query[sort_by]}')
-            return self.db.fetchall()
-
-
         # shorthanding the filter keys
         and_data = filters[const.Filters.AND]
         not_data = filters[const.Filters.NOT]
