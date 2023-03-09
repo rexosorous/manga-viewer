@@ -310,6 +310,7 @@ class Home(QMainWindow, Ui_MainWindow):
         """Clears the gallery of all books
         """
         for i in reversed(range(self.bookshelf.count())):
+            self.bookshelf.itemAt(i).widget().clear_mem() # fixes memory leak
             self.bookshelf.itemAt(i).widget().setParent(None)
 
 

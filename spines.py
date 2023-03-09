@@ -142,6 +142,11 @@ class BookSpine(QtWidgets.QFrame):
             elif selection == delete_disk:
                 self.signals.delete_book_disk.emit(self)
 
+    def clear_mem(self):
+        '''fixes memory leak
+        '''
+        del self.loaded_image
+
     def __eq__(self, compare):
         if isinstance(compare, BookSpine) and self.id_ == compare.id_:
             return True

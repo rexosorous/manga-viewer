@@ -26,8 +26,7 @@ class PagePreview(Ui_page_preview, QFrame):
         super().__init__()
         self.setupUi(self)
 
-        pixmap = image.copy() # deep copy so it doesn't effect the original
-        pixmap = pixmap.scaledToWidth(100, Qt.SmoothTransformation)
+        pixmap = image.scaledToWidth(100, Qt.FastTransformation)
         self.img_label.setPixmap(pixmap)
         self.img_label.setFixedHeight(pixmap.size().height())
         self.text_label.setText(text)
@@ -75,6 +74,7 @@ class Reader(QMainWindow, Ui_MainWindow):
     def __init__(self, signals, db):
         super().__init__()
         self.setupUi(self)
+        self.setAttribute(Qt.WA_DeleteOnClose)
 
         # init attributes
         self.signals = signals
@@ -230,8 +230,8 @@ class Reader(QMainWindow, Ui_MainWindow):
 
         Also resizes the image and moves the scrollbar back to the top
         """
-        pixmap = self.pages[page].copy() # deep copy so it doesn't effeect the original
-        pixmap = pixmap.scaled(int(pixmap.width()*self.zoom), int(pixmap.height()*self.zoom), Qt.KeepAspectRatio, Qt.SmoothTransformation)
+        pixmap = self.pages[page]
+        pixmap = pixmap.scaled(int(pixmap.width()*self.zoom), int(pixmap.height()*self.zoom), Qt.KeepAspectRatio, Qt.FastTransformation)
         self.image.setPixmap(pixmap)
         self.scrollArea.verticalScrollBar().setSliderPosition(0)
         self.db.set_bookmark(self.book_id, page)
@@ -259,3 +259,12 @@ class Reader(QMainWindow, Ui_MainWindow):
                 self.draw(self.page_list.currentRow())
             elif selection == page_one:
                 self.page_list.setCurrentRow(0)
+
+
+
+    def closeEvent(self, event):
+        '''
+        Fixes a memory leak
+        '''
+        del self.pages
+        event.setAccepted(True)
