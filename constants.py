@@ -1,9 +1,12 @@
 # dependencies
 from PyQt5 import QtGui
+from json import load
 
 
-
-directory = 'test_library'
+directory = ''
+with open('config.json', 'r') as file:
+    data = load(file)
+    directory = data['directory']
 
 
 

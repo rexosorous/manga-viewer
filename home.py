@@ -1,6 +1,7 @@
 # standard libraries
 from datetime import datetime
 from functools import partial
+import json
 from os import listdir
 from os.path import isdir
 from os.path import relpath
@@ -8,6 +9,7 @@ from shutil import rmtree
 import random
 
 # dependencies
+from PyQt5.QtWidgets import QFileDialog
 from PyQt5.QtWidgets import QMainWindow
 from PyQt5.QtWidgets import QMenu
 from PyQt5.QtWidgets import QMessageBox
@@ -86,9 +88,7 @@ class Home(QMainWindow, Ui_MainWindow):
         """
         # toolbar
         self.scan_button.triggered.connect(self.scan_directory)
-        # self.change_directory_button.triggered.connect()
-        # self.backup_database_button.triggered.connect()
-        # self.load_database_button.triggered.conenct()
+        self.change_directory_button.triggered.connect(self.change_directory)
 
         # dropdowns
         self.sort_by.currentIndexChanged.connect(self.sort_gallery)
@@ -97,9 +97,9 @@ class Home(QMainWindow, Ui_MainWindow):
         self.search_bar.textChanged.connect(self.search_gallery)
 
         # buttons
-        self.details_button.clicked.connect(lambda : [self.details_panel.setVisible(True), self.search_panel.setVisible(False), self.metadata_panel.setVisible(False)])
-        self.advanced_search_button.clicked.connect(lambda : [self.details_panel.setVisible(False), self.search_panel.setVisible(True), self.metadata_panel.setVisible(False)])
-        self.metadata_button.clicked.connect(lambda : [self.details_panel.setVisible(False), self.search_panel.setVisible(False), self.metadata_panel.setVisible(True)])
+        self.details_button.clicked.connect(self.show_details_panel)
+        self.advanced_search_button.clicked.connect(self.show_advanced_search_panel)
+        self.metadata_button.clicked.connect(self.show_metadata_panel)
         self.random_button.clicked.connect(self.random_select)
 
         # bookshelf
@@ -114,6 +114,39 @@ class Home(QMainWindow, Ui_MainWindow):
 
 
 
+    def show_details_panel(self):
+        self.details_panel.setVisible(True)
+        self.search_panel.setVisible(False)
+        self.metadata_panel.setVisible(False)
+
+        self.details_button.setEnabled(False)
+        self.advanced_search_button.setEnabled(True)
+        self.metadata_button.setEnabled(True)
+
+
+
+    def show_advanced_search_panel(self):
+        self.details_panel.setVisible(False)
+        self.search_panel.setVisible(True)
+        self.metadata_panel.setVisible(False)
+
+        self.details_button.setEnabled(True)
+        self.advanced_search_button.setEnabled(False)
+        self.metadata_button.setEnabled(True)
+
+
+
+    def show_metadata_panel(self):
+        self.details_panel.setVisible(False)
+        self.search_panel.setVisible(False)
+        self.metadata_panel.setVisible(True)
+
+        self.details_button.setEnabled(True)
+        self.advanced_search_button.setEnabled(True)
+        self.metadata_button.setEnabled(False)
+
+
+
     def scan_directory(self):
         """Scans the manga directory for any new entries, adds the new books to the db with near blank fields, and then sets the search filter to only show the new books so the user can edit the metadata
         """
@@ -122,12 +155,26 @@ class Home(QMainWindow, Ui_MainWindow):
             self.db.add_book(book, book, pages=len(listdir(f'{const.directory}/{book}')))
 
         # filter gallery to show only the the new books (using date filtering)
-        # show deatails_panel with the filter we set
-        self.details_panel.setVisible(True)
-        self.search_panel.setVisible(False)
-        self.metadata_panel.setVisible(False)
+        self.show_details_panel()
         self.search_panel.clear_fields()
         self.search_panel.date_low.setDateTime(scan_time)
+        self.search_panel.submit()
+
+
+
+    def change_directory(self):
+        choose_folder = QFileDialog()
+        choose_folder.setFileMode(QFileDialog.FileMode.DirectoryOnly)
+        if choose_folder.exec_():
+            folder = choose_folder.selectedFiles()
+
+        with open('config.json', 'r') as file:
+            data = json.load(file)
+        data['directory'] = folder[0]
+        with open('config.json', 'w') as file:
+            json.dump(data, file)
+        const.directory = folder[0]
+
         self.search_panel.submit()
 
 
@@ -146,7 +193,13 @@ class Home(QMainWindow, Ui_MainWindow):
             filters (dict, optional): filters to filter by from search panel
         """
         self.books = []
+        books_on_disk = listdir(const.directory)
+        books_not_found = []
         for book in self.db.get_books(filters, self.sort_by.currentIndex()):
+            if book['directory'] not in books_on_disk: # avoid errors where it can't find the book on disk
+                books_not_found.append(book)
+                continue
+
             # set up frame
             spine = spines.BookSpine(self.signals, *book.values())
 
@@ -158,6 +211,16 @@ class Home(QMainWindow, Ui_MainWindow):
             spine.mouseDoubleClickEvent = partial(self.open_book, self.books[-1])
             spine.enterEvent = partial(self.highlight, self.books[-1])
             spine.leaveEvent = partial(self.unhighlight, self.books[-1])
+
+        if books_not_found:
+            popup = QMessageBox()
+            popup.setIcon(QMessageBox.Critical)
+            popup.setWindowTitle('Error')
+            popup.setText('Unable to find the following books:\n')
+            popup.setInformativeText('\n'.join([book['name'] for book in books_not_found]))
+            popup.setStandardButtons(QMessageBox.Close)
+            popup.exec_()
+
         self.populate_gallery()
 
 
@@ -387,9 +450,7 @@ class Home(QMainWindow, Ui_MainWindow):
         clear_selected = menu.addAction('Clear Selected')
         if (selection := menu.exec_(event.globalPos())):
             if selection == clear_filter:
-                self.details_panel.setVisible(False)
-                self.search_panel.setVisible(True)
-                self.metadata_panel.setVisible(False)
+                self.show_advanced_search_panel()
                 self.search_panel.clear_fields()
                 self.search_panel.submit()
             if selection == clear_selected:

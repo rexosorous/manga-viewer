@@ -172,16 +172,19 @@
         </widget>
        </item>
        <item>
-        <widget class="QPushButton" name="details_button">
+        <widget class="QPushButton" name="advanced_search_button">
          <property name="text">
-          <string>Book Details</string>
+          <string>Advanced Search</string>
          </property>
         </widget>
        </item>
        <item>
-        <widget class="QPushButton" name="advanced_search_button">
+        <widget class="QPushButton" name="details_button">
+         <property name="enabled">
+          <bool>false</bool>
+         </property>
          <property name="text">
-          <string>Advanced Search</string>
+          <string>Book Details</string>
          </property>
         </widget>
        </item>
@@ -347,9 +350,6 @@
     </property>
     <addaction name="scan_button"/>
     <addaction name="change_directory_button"/>
-    <addaction name="separator"/>
-    <addaction name="backup_database_button"/>
-    <addaction name="actionLoad_Database"/>
    </widget>
    <addaction name="menuFile"/>
   </widget>
@@ -368,9 +368,9 @@
     <string>Backup Database</string>
    </property>
   </action>
-  <action name="actionLoad_Database">
+  <action name="load_database_button">
    <property name="text">
-    <string>load_database_button</string>
+    <string>Load Database</string>
    </property>
   </action>
  </widget>
