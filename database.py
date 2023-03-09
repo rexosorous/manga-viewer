@@ -63,6 +63,7 @@ class DBHandler:
             CREATE TABLE IF NOT EXISTS books
             (
                 id INTEGER PRIMARY KEY,
+                date_added DATETIME DEFAULT (DATETIME(CURRENT_TIMESTAMP, 'LOCALTIME')),
                 name TEXT,
                 alt_name TEXT,
                 series INTEGER,
@@ -70,8 +71,9 @@ class DBHandler:
                 pages INTEGER,
                 rating INTEGER,
                 notes TEXT,
-                date_added REAL, -- datetime.datetime.now().timestamp()
-                directory TEXT
+                directory TEXT,
+                zoom REAL,
+                bookmark INTEGER -- the page you left on when you closed the reader
             )
         ''')
 
@@ -235,8 +237,8 @@ class DBHandler:
         and_block.append(f'books.rating>={and_data["rating"][0]}') if and_data['rating'][0] and and_data['rating'][1] == 2 else None
         and_block.append(f'books.pages>={and_data["pages_low"]}') if and_data['pages_low'] else None
         and_block.append(f'books.pages<={and_data["pages_high"]}') if and_data['pages_high'] else None
-        and_block.append(f'books.date_added>={and_data["date_low"]}') if and_data['date_low'] > -6857193600 else None
-        and_block.append(f'books.date_added<={and_data["date_high"]}') if and_data['date_high'] > -6857193600 else None
+        and_block.append(f'books.date_added>="{and_data["date_low"]}"') if and_data['date_low'] > datetime(1900, 1, 1, 0, 0, 0, 0) else None
+        and_block.append(f'books.date_added<="{and_data["date_high"]}"') if and_data['date_high'] > datetime(1900, 1, 1, 0, 0, 0, 0) else None
 
         # AND COMPLEX
         and_block.append('(' + '\n\tOR '.join([f'artistID={id_}' for id_ in and_data['artists']]) + ')') if and_data['artists'] else None
@@ -415,26 +417,14 @@ class DBHandler:
 
 
 
-    def add_book(self, name, directory, alt_name='NULL', series='NULL', series_order='NULL', pages='NULL', rating='NULL', notes='NULL'):
+    def add_book(self, name, directory, alt_name='NULL', series='NULL', series_order='NULL', pages='NULL', rating='NULL', notes='NULL', zoom=1, bookmark=0):
         """Creates a new book entry
         """
-        '''
-                id INTEGER,
-                name TEXT,
-                alt_name TEXT,
-                series INTEGER,
-                series_order REAL,
-                pages INTEGER,
-                rating INTEGER,
-                notes TEXT,
-                date_added REAL, -- datetime.datetime.now().timestamp()
-                directory TEXT
-        '''
         if alt_name != 'NULL':
             alt_name = f'"{alt_name}"'
         if notes != 'NULL':
             notes = f'"{notes}"'
-        self.db.execute(f'INSERT INTO books(name, alt_name, series, series_order, pages, rating, notes, date_added, directory) VALUES("{name}", {alt_name}, {series}, {series_order}, {pages}, {rating}, {notes}, {datetime.now().timestamp()}, "{directory}")')
+        self.db.execute(f'INSERT INTO books(name, alt_name, series, series_order, pages, rating, notes, directory, zoom, bookmark) VALUES("{name}", {alt_name}, {series}, {series_order}, {pages}, {rating}, {notes}, "{directory}", {zoom}, {bookmark})')
         self.conn.commit()
 
 
@@ -490,3 +480,15 @@ class DBHandler:
         """
         self.db.execute('SELECT directory FROM books')
         return [x['directory'] for x in self.db.fetchall()]
+
+
+
+    def set_book_zoom(self, id_: int, zoom: float):
+        self.db.execute(f'UPDATE books SET zoom = {zoom} WHERE id = {id_}')
+        self.conn.commit()
+
+
+
+    def set_bookmark(self, id_: int, page: int):
+        self.db.execute(f'UPDATE books SET bookmark = {page} WHERE id = {id_}')
+        self.conn.commit()

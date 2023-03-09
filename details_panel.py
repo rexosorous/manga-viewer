@@ -134,7 +134,7 @@ class DetailsPanel(QFrame, Ui_details_panel):
         self.order_number.setValue((0 if not book_info['series_order'] else book_info['series_order']))
         self.rating_number.setValue((0 if not book_info['rating'] else book_info['rating']))
         self.pages_text.setText(str(book_info['pages']))
-        self.date_text.setText(datetime.fromtimestamp(book_info['date_added']).strftime('%B %d, %Y - %I:%M%p'))
+        self.date_text.setText(datetime.fromisoformat(book_info['date_added']).strftime('%B %d, %Y - %I:%M%p'))
         self.notes_text.setText(book_info['notes'])
 
         for i in range(self.artists_list.count()):

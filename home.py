@@ -122,9 +122,9 @@ class Home(QMainWindow, Ui_MainWindow):
             self.db.add_book(book, book, pages=len(listdir(f'{const.directory}/{book}')))
 
         # filter gallery to show only the the new books (using date filtering)
-        # show search_panel with the filter we set
-        self.details_panel.setVisible(False)
-        self.search_panel.setVisible(True)
+        # show deatails_panel with the filter we set
+        self.details_panel.setVisible(True)
+        self.search_panel.setVisible(False)
         self.metadata_panel.setVisible(False)
         self.search_panel.clear_fields()
         self.search_panel.date_low.setDateTime(scan_time)
@@ -167,30 +167,30 @@ class Home(QMainWindow, Ui_MainWindow):
         """
         self.clear_gallery()
 
-        row_pos = 0
         col_pos = 0
+        row_pos = 0
         for book in self.books:
             if book.hide_:
                 continue
-            self.bookshelf.addWidget(book, col_pos, row_pos)
+            self.bookshelf.addWidget(book, row_pos, col_pos)
 
             # calculate next position
-            row_pos += 1
-            if row_pos > 4: # max 5 columns. aka 5 slots per row
-                row_pos = 0
-                col_pos += 1
+            col_pos += 1
+            if col_pos > 4: # max 5 columns. aka 5 slots per row
+                col_pos = 0
+                row_pos += 1
 
-        while col_pos <= 1:
+        while row_pos <= 1:
             # if there's only a few books, place invisible frames to shove things into the top left corner
             # this avoids books showing up in the middle and messing up the look of the gallery
             blank = spines.BlankSpine()
-            self.bookshelf.addWidget(blank, col_pos, row_pos)
+            self.bookshelf.addWidget(blank, row_pos, col_pos)
 
             # calculate next position
-            row_pos += 1
-            if row_pos > 4: # max 5 columns. aka 5 slots per row
-                row_pos = 0
-                col_pos += 1
+            col_pos += 1
+            if col_pos > 4: # max 5 columns. aka 5 slots per row
+                col_pos = 0
+                row_pos += 1
 
         if (new_select := next((x for x in self.books if x == self.selected), None)):
             self.select(new_select)
@@ -299,7 +299,7 @@ class Home(QMainWindow, Ui_MainWindow):
             source (QFrame): The frames that represent the book that was double clicked
             event (QMouseEvent): The event that was emitted. Unused, but required by PyQt5
         """
-        self.signals.open_book_signal.emit(source.id_, source.title, f'{self.directory}/{source.folder}')
+        self.signals.open_book_signal.emit(source.id_)
 
 
 

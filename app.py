@@ -28,8 +28,8 @@ stack.addWidget(home_window)
 stack.addWidget(reader_window)
 stack.setWindowTitle("Manga Viewer")
 
-def open_reader(book_id: int, book_title: str, book_directory: str):
-    reader_window.open_book(book_id, book_title, book_directory)
+def open_reader(book_id: int):
+    reader_window.open_book(book_id)
     stack.setCurrentIndex(1)
 def close_reader():
     stack.setCurrentIndex(0)

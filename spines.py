@@ -30,7 +30,7 @@ class BookSpine(QtWidgets.QFrame):
         title (str)
         layout (QVBoxLayout)
     """
-    def __init__(self, signals, book_id: int, title: str, alt_title: str, series: int, series_order: float, pages: int, rating: int, notes: str, date_added: datetime, folder: str):
+    def __init__(self, signals, book_id: int, date_added: datetime, title: str, alt_title: str, series: int, series_order: float, pages: int, rating: int, notes: str, folder: str, zoom: float, bookmark: int):
         super().__init__()
         self.layout = QtWidgets.QVBoxLayout()
 
@@ -46,9 +46,9 @@ class BookSpine(QtWidgets.QFrame):
         self.setup_layout()
         self.setup_img()
         self.setup_title()
-        self.set_db_data(book_id, title, alt_title, series, series_order, pages, rating, notes, date_added, folder)
+        self.set_db_data(book_id, date_added, title, alt_title, series, series_order, pages, rating, notes, folder, zoom, bookmark)
 
-    def set_db_data(self, book_id: int, title: str, alt_title: str, series: int, series_order: float, pages: int, rating: int, notes: str, date_added: datetime, folder: str):
+    def set_db_data(self, book_id: int, date_added: datetime, title: str, alt_title: str, series: int, series_order: float, pages: int, rating: int, notes: str, folder: str, zoom: float, bookmark: int):
         self.id_ = book_id
         self.title = title
         self.alt_title = alt_title
@@ -155,6 +155,7 @@ class BlankSpine(QtWidgets.QFrame):
         super().__init__()
         self.setFixedWidth(const.Spines.WIDTH)
         self.setFixedHeight(const.Spines.HEIGHT)
+        self.resize(QtWidgets.QApplication.primaryScreen().size().width())
 
     def resize(self, window_width: int):
         scale = window_width / 1920

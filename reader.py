@@ -31,7 +31,7 @@ class PagePreview(Ui_page_preview, QFrame):
         self.img_label.setPixmap(pixmap)
         self.img_label.setFixedHeight(pixmap.size().height())
         self.text_label.setText(text)
-        self.text_label.setFixedHeight(self.text_label.heightForWidth(100))
+        self.text_label.setFixedHeight(self.text_label.heightForWidth(100) + 5)
 
 
     def adjust(self):
@@ -70,7 +70,7 @@ class Reader(QMainWindow, Ui_MainWindow):
         series_list (QListWidget): shows all books in the series, allowing the user to jump to a sequel or prequel
         pages ([str]): holds filenames for each page in the book
         current_page (int): the page of the book currently being viewed. 0 for the first page
-        size (float): size multiplier. ex: 1 means 100%, 1.1 means 110%, 0.9 means 90%
+        zoom (float): zoom multiplier. ex: 1 means 100%, 1.1 means 110%, 0.9 means 90%
     """
     def __init__(self, signals, db):
         super().__init__()
@@ -84,7 +84,7 @@ class Reader(QMainWindow, Ui_MainWindow):
         self.directory = ''
         self.pages = []
         self.series = []
-        self.size = 1
+        self.zoom = 1
 
         self.connect_events()
 
@@ -113,20 +113,22 @@ class Reader(QMainWindow, Ui_MainWindow):
 
 
 
-    def open_book(self, book_id: int, book_title: str, book_directory: str):
+    def open_book(self, book_id: int):
         """Loads a book's pages
 
         Args:
             book_directory (str): the relative directory to find the book
         """
-        self.book_id = book_id
-        self.book_title = book_title
-        self.directory = book_directory
+        book = self.db.get_book(book_id)
+        self.book_id = book['id']
+        self.book_title = book['name']
+        self.directory = f'{const.directory}/{book["directory"]}'
+        self.zoom = book['zoom']
         self.pages = self.get_imgs()
-        self.draw(0)
         self.populate_page_list()
         self.populate_series_list()
         self.pages_series_tab_widget.setCurrentIndex(0)
+        self.page_list.setCurrentRow(book['bookmark'])
 
 
 
@@ -193,8 +195,9 @@ class Reader(QMainWindow, Ui_MainWindow):
 
         Triggered by =/+
         """
-        self.size += 0.05
+        self.zoom += 0.05
         self.draw(self.page_list.currentRow())
+        self.db.set_book_zoom(self.book_id, self.zoom)
 
 
 
@@ -203,10 +206,11 @@ class Reader(QMainWindow, Ui_MainWindow):
 
         Triggered by -/_
         """
-        self.size -= 0.05
-        if self.size < 0.05: # don't let users zoom out to below 5% of the original picture size
-            self.size = 0.05
+        self.zoom -= 0.05
+        if self.zoom < 0.05: # don't let users zoom out to below 5% of the original picture size
+            self.zoom = 0.05
         self.draw(self.page_list.currentRow())
+        self.db.set_book_zoom(self.book_id, self.zoom)
 
 
 
@@ -226,9 +230,10 @@ class Reader(QMainWindow, Ui_MainWindow):
         Also resizes the image and moves the scrollbar back to the top
         """
         pixmap = self.pages[page].copy() # deep copy so it doesn't effeect the original
-        pixmap = pixmap.scaled(int(pixmap.width()*self.size), int(pixmap.height()*self.size), Qt.KeepAspectRatio, Qt.SmoothTransformation)
+        pixmap = pixmap.scaled(int(pixmap.width()*self.zoom), int(pixmap.height()*self.zoom), Qt.KeepAspectRatio, Qt.SmoothTransformation)
         self.image.setPixmap(pixmap)
         self.scrollArea.verticalScrollBar().setSliderPosition(0)
+        self.db.set_bookmark(self.book_id, page)
 
 
 
@@ -258,7 +263,7 @@ class Reader(QMainWindow, Ui_MainWindow):
             if selection == close:
                 self.close()
             elif selection == reset_zoom:
-                self.size = 1
+                self.zoom = 1
                 self.draw(self.page_list.currentRow())
             elif selection == page_one:
                 self.page_list.setCurrentRow(0)
