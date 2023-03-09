@@ -275,6 +275,9 @@
           <height>100</height>
          </size>
         </property>
+        <property name="editTriggers">
+         <set>QAbstractItemView::NoEditTriggers</set>
+        </property>
         <property name="sortingEnabled">
          <bool>false</bool>
         </property>
@@ -324,6 +327,9 @@
           <height>100</height>
          </size>
         </property>
+        <property name="editTriggers">
+         <set>QAbstractItemView::NoEditTriggers</set>
+        </property>
         <property name="sortingEnabled">
          <bool>false</bool>
         </property>
@@ -372,6 +378,9 @@
           <width>0</width>
           <height>100</height>
          </size>
+        </property>
+        <property name="editTriggers">
+         <set>QAbstractItemView::NoEditTriggers</set>
         </property>
         <property name="sortingEnabled">
          <bool>false</bool>

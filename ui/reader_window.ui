@@ -224,6 +224,9 @@
             </disabled>
            </palette>
           </property>
+          <property name="editTriggers">
+           <set>QAbstractItemView::NoEditTriggers</set>
+          </property>
           <property name="spacing">
            <number>10</number>
           </property>
@@ -295,6 +298,9 @@
             </disabled>
            </palette>
           </property>
+          <property name="editTriggers">
+           <set>QAbstractItemView::NoEditTriggers</set>
+          </property>
           <property name="spacing">
            <number>10</number>
           </property>
@@ -323,7 +329,7 @@
          <x>0</x>
          <y>0</y>
          <width>663</width>
-         <height>626</height>
+         <height>631</height>
         </rect>
        </property>
        <layout class="QVBoxLayout" name="verticalLayout_3">
@@ -349,7 +355,7 @@
      <x>0</x>
      <y>0</y>
      <width>865</width>
-     <height>26</height>
+     <height>21</height>
     </rect>
    </property>
   </widget>

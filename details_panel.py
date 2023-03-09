@@ -117,7 +117,8 @@ class DetailsPanel(QFrame, Ui_details_panel):
 
         Makes sure to re-populate book info if a book is currently selected
         """
-        cover_img = self.cover_img.pixmap().copy()
+        if self.book_id >= 0:
+            cover_img = self.cover_img.pixmap().copy()
         self.populate_metadata()
         if self.book_id >= 0:
             self.populate_book_info(cover_img, self.book_id)
