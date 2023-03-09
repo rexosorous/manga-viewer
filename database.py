@@ -232,19 +232,34 @@ class DBHandler:
 
         # AND SIMPLE
         and_block.append(f'(books.name LIKE "%{and_data["title"]}%" OR books.alt_name LIKE "%{and_data["title"]}%")') if and_data['title'] else None
-        and_block.append(f'books.series_order={and_data["order"]}') if and_data['order'] else None
-        and_block.append(f'books.rating={and_data["rating"][0]}') if and_data['rating'][0] and and_data['rating'][1] == 0 else None
-        and_block.append(f'books.rating>={and_data["rating"][0]}') if and_data['rating'][0] and and_data['rating'][1] == 2 else None
+        and_block.append(f'books.rating={and_data["rating"][0]}') if and_data['rating'][0] >= 0 and and_data['rating'][1] == 0 else None
+        and_block.append(f'books.rating>={and_data["rating"][0]}') if and_data['rating'][0] >= 0 and and_data['rating'][1] == 2 else None
+        and_block.append(f'books.rating IS NULL') if and_data['rating'][0] < 0 and and_data['rating'][1] == 0 else None
         and_block.append(f'books.pages>={and_data["pages_low"]}') if and_data['pages_low'] else None
         and_block.append(f'books.pages<={and_data["pages_high"]}') if and_data['pages_high'] else None
         and_block.append(f'books.date_added>="{and_data["date_low"]}"') if and_data['date_low'] > datetime(1900, 1, 1, 0, 0, 0, 0) else None
         and_block.append(f'books.date_added<="{and_data["date_high"]}"') if and_data['date_high'] > datetime(1900, 1, 1, 0, 0, 0, 0) else None
 
         # AND COMPLEX
-        and_block.append('(' + '\n\tOR '.join([f'artistID={id_}' for id_ in and_data['artists']]) + ')') if and_data['artists'] else None
-        and_block.append('(' + '\n\tOR '.join([f'books.series={id_}' for id_ in and_data['series']]) + ')') if and_data['series'] else None
-        and_block.append('(' + '\n\tOR '.join([f'genreID={id_}' for id_ in and_data['genres']]) + ')') if and_data['genres'] else None
-        and_block.append('(' + '\n\tOR '.join([f'tagID={id_}' for id_ in and_data['tags']]) + ')') if and_data['tags'] else None
+        if and_data['artists'] == None: # different from being empty
+            and_block.append('artistID IS NULL')
+        elif and_data['artists']:
+            and_block.append('(' + '\n\tOR '.join([f'artistID={id_}' for id_ in and_data['artists']]) + ')')
+
+        if and_data['series'] == None: # different from being empty
+            and_block.append('series IS NULL')
+        elif and_data['series']:
+            and_block.append('(' + '\n\tOR '.join([f'books.series={id_}' for id_ in and_data['series']]) + ')')
+
+        if and_data['genres'] == None: # different from being empty
+            and_block.append('genreID IS NULL')
+        elif and_data['genres']:
+            and_block.append('(' + '\n\tOR '.join([f'genreID={id_}' for id_ in and_data['genres']]) + ')')
+
+        if and_data['tags'] == None: # different from being empty
+            and_block.append('tagID IS NULL')
+        elif and_data['tags']:
+            and_block.append('(' + '\n\tOR '.join([f'tagID={id_}' for id_ in and_data['tags']]) + ')')
 
         # NOT
         not_block += [f'artistID={id_}' for id_ in not_data['artists']]
@@ -259,10 +274,10 @@ class DBHandler:
         or_block += [f'tagID={id_}' for id_ in or_data['tags']]
 
         # count
-        count_block.append(f'COUNT(DISTINCT artistID)={len(and_data["artists"])}') if len(and_data['artists']) > 1 else None
-        count_block.append(f'COUNT(DISTINCT books.series)={len(and_data["series"])}') if len(and_data['series']) > 1 else None
-        count_block.append(f'COUNT(DISTINCT genreID)={len(and_data["genres"])}') if len(and_data['genres']) > 1 else None
-        count_block.append(f'COUNT(DISTINCT tagID)={len(and_data["tags"])}') if len(and_data['tags']) > 1 else None
+        count_block.append(f'COUNT(DISTINCT artistID)={len(and_data["artists"])}') if and_data['artists'] and len(and_data['artists']) > 1 else None
+        count_block.append(f'COUNT(DISTINCT books.series)={len(and_data["series"])}') if and_data['series'] and len(and_data['series']) > 1 else None
+        count_block.append(f'COUNT(DISTINCT genreID)={len(and_data["genres"])}') if and_data['genres'] and len(and_data['genres']) > 1 else None
+        count_block.append(f'COUNT(DISTINCT tagID)={len(and_data["tags"])}') if and_data['tags'] and len(and_data['tags']) > 1 else None
 
 
         # check if there are even any search filters

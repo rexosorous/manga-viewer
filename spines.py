@@ -167,3 +167,8 @@ class BlankSpine(QtWidgets.QFrame):
         scale = window_width / 1920
         self.setFixedWidth(int(const.Spines.WIDTH * scale))
         self.setFixedHeight(int(const.Spines.HEIGHT * scale))
+
+    def clear_mem(self):
+        '''needs to be here as home window will call clear_mem() for all spines in the gallery
+        '''
+        pass

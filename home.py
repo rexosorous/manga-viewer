@@ -457,7 +457,7 @@ class Home(QMainWindow, Ui_MainWindow):
         if (selection := menu.exec_(event.globalPos())):
             if selection == clear_filter:
                 self.show_advanced_search_panel()
-                self.search_panel.clear_fields()
+                self.search_panel.populate_metadata()
                 self.search_panel.submit()
             if selection == clear_selected:
                 self.reset_selected()

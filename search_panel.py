@@ -24,7 +24,6 @@ class SearchPanel(QFrame, Ui_search_panel):
         artists_list (QListWidget)
         series_text (QLineEdit)
         series_list (QListWidget)
-        order_number (QSpinBox)
         rating_number (QSpinBox)
         rating_toggle (QCheckBox)
         pages_number_low (QComboBox)
@@ -71,6 +70,10 @@ class SearchPanel(QFrame, Ui_search_panel):
         # buttons
         self.filter_prev_button.clicked.connect(partial(self.change_filter, -1))
         self.filter_next_button.clicked.connect(partial(self.change_filter, 1))
+        self.no_artists_button.clicked.connect(self.toggle_no_artists)
+        self.no_series_button.clicked.connect(self.toggle_no_series)
+        self.no_genres_button.clicked.connect(self.toggle_no_genres)
+        self.no_tags_button.clicked.connect(self.toggle_no_tags)
         self.submit_button.clicked.connect(self.submit)
         self.clear_button.clicked.connect(self.populate_metadata)
 
@@ -100,21 +103,32 @@ class SearchPanel(QFrame, Ui_search_panel):
 
     def clear_fields(self):
         self.title_text.clear()
+        self.no_artists_button.setText('No Artists')
         self.artists_text.clear()
+        self.artists_text.setEnabled(True)
         self.artists_list.clear()
+        self.artists_list.setEnabled(True)
+        self.no_series_button.setText('No Series')
         self.series_text.clear()
+        self.series_text.setEnabled(True)
         self.series_list.clear()
-        self.order_number.setValue(0)
-        self.rating_number.setValue(0)
+        self.series_list.setEnabled(True)
+        self.rating_number.setValue(-1)
         self.rating_toggle.setCheckState(2)
         self.pages_number_low.setValue(0)
         self.pages_number_high.setValue(0)
         self.date_low.setDateTime(self.date_low.minimumDateTime())
         self.date_high.setDateTime(self.date_high.minimumDateTime())
+        self.no_genres_button.setText('No Genres')
         self.genres_text.clear()
+        self.genres_text.setEnabled(True)
         self.genres_list.clear()
+        self.genres_list.setEnabled(True)
+        self.no_tags_button.setText('No Tags')
         self.tags_text.clear()
+        self.tags_text.setEnabled(True)
         self.tags_list.clear()
+        self.tags_list.setEnabled(True)
 
 
 
@@ -245,13 +259,60 @@ class SearchPanel(QFrame, Ui_search_panel):
 
 
 
+    def toggle_no_artists(self):
+        if self.artists_text.isEnabled():
+            self.artists_text.setEnabled(False)
+            self.artists_list.setEnabled(False)
+            self.no_artists_button.setText('Search Artists')
+        else:
+            self.artists_text.setEnabled(True)
+            self.artists_list.setEnabled(True)
+            self.no_artists_button.setText('No Artists')
+
+
+
+    def toggle_no_series(self):
+        if self.series_text.isEnabled():
+            self.series_text.setEnabled(False)
+            self.series_list.setEnabled(False)
+            self.no_series_button.setText('Search Series')
+        else:
+            self.series_text.setEnabled(True)
+            self.series_list.setEnabled(True)
+            self.no_series_button.setText('No Series')
+
+
+
+    def toggle_no_genres(self):
+        if self.genres_text.isEnabled():
+            self.genres_text.setEnabled(False)
+            self.genres_list.setEnabled(False)
+            self.no_genres_button.setText('Search Genres')
+        else:
+            self.genres_text.setEnabled(True)
+            self.genres_list.setEnabled(True)
+            self.no_genres_button.setText('No Genres')
+
+
+
+    def toggle_no_tags(self):
+        if self.tags_text.isEnabled():
+            self.tags_text.setEnabled(False)
+            self.tags_list.setEnabled(False)
+            self.no_tags_button.setText('Search Tags')
+        else:
+            self.tags_text.setEnabled(True)
+            self.tags_list.setEnabled(True)
+            self.no_tags_button.setText('No Tags')
+
+
+
     def submit(self):
         """Stores all the form information into a dict and then emits a signal to apply the search filters
         """
         filters = {
             const.Filters.AND: {
                 'title': self.title_text.text(),
-                'order': self.order_number.value(),
                 'rating': (self.rating_number.value(), self.rating_toggle.checkState()),
                 'pages_low': self.pages_number_low.value(),
                 'pages_high': self.pages_number_high.value(),
@@ -285,6 +346,9 @@ class SearchPanel(QFrame, Ui_search_panel):
         }
 
         for list_ in list_picker.keys():
+            if not list_.isEnabled():
+                filters[const.Filters.AND][list_picker[list_]] = None
+                continue
             for i in range(list_.count()):
                 item = list_.item(i)
                 if item.filter_type == 0:

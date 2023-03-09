@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>351</width>
+    <width>352</width>
     <height>958</height>
    </rect>
   </property>
@@ -189,7 +189,41 @@
        <number>0</number>
       </property>
       <item>
-       <widget class="QLineEdit" name="artists_text"/>
+       <widget class="QFrame" name="frame_5">
+        <property name="frameShape">
+         <enum>QFrame::StyledPanel</enum>
+        </property>
+        <property name="frameShadow">
+         <enum>QFrame::Raised</enum>
+        </property>
+        <layout class="QHBoxLayout" name="horizontalLayout_6">
+         <property name="spacing">
+          <number>0</number>
+         </property>
+         <property name="leftMargin">
+          <number>0</number>
+         </property>
+         <property name="topMargin">
+          <number>0</number>
+         </property>
+         <property name="rightMargin">
+          <number>0</number>
+         </property>
+         <property name="bottomMargin">
+          <number>0</number>
+         </property>
+         <item>
+          <widget class="QPushButton" name="no_artists_button">
+           <property name="text">
+            <string>No Artists</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QLineEdit" name="artists_text"/>
+         </item>
+        </layout>
+       </widget>
       </item>
       <item>
        <widget class="QListWidget" name="artists_list"/>
@@ -229,7 +263,41 @@
        <number>0</number>
       </property>
       <item>
-       <widget class="QLineEdit" name="series_text"/>
+       <widget class="QFrame" name="frame_6">
+        <property name="frameShape">
+         <enum>QFrame::StyledPanel</enum>
+        </property>
+        <property name="frameShadow">
+         <enum>QFrame::Raised</enum>
+        </property>
+        <layout class="QHBoxLayout" name="horizontalLayout_7">
+         <property name="spacing">
+          <number>0</number>
+         </property>
+         <property name="leftMargin">
+          <number>0</number>
+         </property>
+         <property name="topMargin">
+          <number>0</number>
+         </property>
+         <property name="rightMargin">
+          <number>0</number>
+         </property>
+         <property name="bottomMargin">
+          <number>0</number>
+         </property>
+         <item>
+          <widget class="QPushButton" name="no_series_button">
+           <property name="text">
+            <string>No Series</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QLineEdit" name="series_text"/>
+         </item>
+        </layout>
+       </widget>
       </item>
       <item>
        <widget class="QListWidget" name="series_list"/>
@@ -238,27 +306,13 @@
     </widget>
    </item>
    <item row="5" column="0">
-    <widget class="QLabel" name="label_18">
-     <property name="text">
-      <string>Order</string>
-     </property>
-    </widget>
-   </item>
-   <item row="5" column="1">
-    <widget class="QSpinBox" name="order_number">
-     <property name="toolTip">
-      <string>0 will be treated as any order number</string>
-     </property>
-    </widget>
-   </item>
-   <item row="6" column="0">
     <widget class="QLabel" name="label_19">
      <property name="text">
       <string>Rating</string>
      </property>
     </widget>
    </item>
-   <item row="6" column="1">
+   <item row="5" column="1">
     <widget class="QFrame" name="frame_7">
      <property name="frameShape">
       <enum>QFrame::StyledPanel</enum>
@@ -281,8 +335,17 @@
       </property>
       <item>
        <widget class="QSpinBox" name="rating_number">
+        <property name="specialValueText">
+         <string>Not Rated</string>
+        </property>
+        <property name="minimum">
+         <number>-1</number>
+        </property>
         <property name="maximum">
          <number>10</number>
+        </property>
+        <property name="value">
+         <number>-1</number>
         </property>
        </widget>
       </item>
@@ -299,14 +362,14 @@
      </layout>
     </widget>
    </item>
-   <item row="7" column="0">
+   <item row="6" column="0">
     <widget class="QLabel" name="label">
      <property name="text">
       <string>Pages</string>
      </property>
     </widget>
    </item>
-   <item row="7" column="1">
+   <item row="6" column="1">
     <widget class="QFrame" name="frame">
      <property name="toolTip">
       <string>0 pages will be treated as any page count</string>
@@ -334,7 +397,20 @@
        <number>0</number>
       </property>
       <item>
-       <widget class="QSpinBox" name="pages_number_low"/>
+       <widget class="QSpinBox" name="pages_number_low">
+        <property name="specialValueText">
+         <string>Do Not Search</string>
+        </property>
+        <property name="minimum">
+         <number>0</number>
+        </property>
+        <property name="maximum">
+         <number>500</number>
+        </property>
+        <property name="value">
+         <number>0</number>
+        </property>
+       </widget>
       </item>
       <item>
        <widget class="QLabel" name="label_3">
@@ -347,19 +423,32 @@
        </widget>
       </item>
       <item>
-       <widget class="QSpinBox" name="pages_number_high"/>
+       <widget class="QSpinBox" name="pages_number_high">
+        <property name="specialValueText">
+         <string>Do Not Search</string>
+        </property>
+        <property name="minimum">
+         <number>0</number>
+        </property>
+        <property name="maximum">
+         <number>500</number>
+        </property>
+        <property name="value">
+         <number>0</number>
+        </property>
+       </widget>
       </item>
      </layout>
     </widget>
    </item>
-   <item row="8" column="0">
+   <item row="7" column="0">
     <widget class="QLabel" name="label_2">
      <property name="text">
       <string>Date</string>
      </property>
     </widget>
    </item>
-   <item row="8" column="1">
+   <item row="7" column="1">
     <widget class="QFrame" name="frame_2">
      <property name="toolTip">
       <string>9/14/1752 12:00 AM will be treated as any date</string>
@@ -388,6 +477,19 @@
       </property>
       <item>
        <widget class="QDateTimeEdit" name="date_low">
+        <property name="specialValueText">
+         <string>Do Not Search</string>
+        </property>
+        <property name="dateTime">
+         <datetime>
+          <hour>0</hour>
+          <minute>0</minute>
+          <second>0</second>
+          <year>1752</year>
+          <month>9</month>
+          <day>14</day>
+         </datetime>
+        </property>
         <property name="calendarPopup">
          <bool>true</bool>
         </property>
@@ -405,6 +507,19 @@
       </item>
       <item>
        <widget class="QDateTimeEdit" name="date_high">
+        <property name="specialValueText">
+         <string>Do Not Search</string>
+        </property>
+        <property name="dateTime">
+         <datetime>
+          <hour>0</hour>
+          <minute>0</minute>
+          <second>0</second>
+          <year>1752</year>
+          <month>9</month>
+          <day>14</day>
+         </datetime>
+        </property>
         <property name="calendarPopup">
          <bool>true</bool>
         </property>
@@ -413,14 +528,14 @@
      </layout>
     </widget>
    </item>
-   <item row="9" column="0">
+   <item row="8" column="0">
     <widget class="QLabel" name="label_20">
      <property name="text">
       <string>Genres</string>
      </property>
     </widget>
    </item>
-   <item row="9" column="1">
+   <item row="8" column="1">
     <widget class="QFrame" name="frame_20">
      <property name="frameShape">
       <enum>QFrame::StyledPanel</enum>
@@ -445,7 +560,41 @@
        <number>0</number>
       </property>
       <item>
-       <widget class="QLineEdit" name="genres_text"/>
+       <widget class="QFrame" name="frame_8">
+        <property name="frameShape">
+         <enum>QFrame::StyledPanel</enum>
+        </property>
+        <property name="frameShadow">
+         <enum>QFrame::Raised</enum>
+        </property>
+        <layout class="QHBoxLayout" name="horizontalLayout_8">
+         <property name="spacing">
+          <number>0</number>
+         </property>
+         <property name="leftMargin">
+          <number>0</number>
+         </property>
+         <property name="topMargin">
+          <number>0</number>
+         </property>
+         <property name="rightMargin">
+          <number>0</number>
+         </property>
+         <property name="bottomMargin">
+          <number>0</number>
+         </property>
+         <item>
+          <widget class="QPushButton" name="no_genres_button">
+           <property name="text">
+            <string>No Genres</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QLineEdit" name="genres_text"/>
+         </item>
+        </layout>
+       </widget>
       </item>
       <item>
        <widget class="QListWidget" name="genres_list"/>
@@ -453,14 +602,14 @@
      </layout>
     </widget>
    </item>
-   <item row="10" column="0">
+   <item row="9" column="0">
     <widget class="QLabel" name="label_21">
      <property name="text">
       <string>Tags</string>
      </property>
     </widget>
    </item>
-   <item row="10" column="1">
+   <item row="9" column="1">
     <widget class="QFrame" name="frame_21">
      <property name="frameShape">
       <enum>QFrame::StyledPanel</enum>
@@ -485,7 +634,41 @@
        <number>0</number>
       </property>
       <item>
-       <widget class="QLineEdit" name="tags_text"/>
+       <widget class="QFrame" name="frame_9">
+        <property name="frameShape">
+         <enum>QFrame::StyledPanel</enum>
+        </property>
+        <property name="frameShadow">
+         <enum>QFrame::Raised</enum>
+        </property>
+        <layout class="QHBoxLayout" name="horizontalLayout_9">
+         <property name="spacing">
+          <number>0</number>
+         </property>
+         <property name="leftMargin">
+          <number>0</number>
+         </property>
+         <property name="topMargin">
+          <number>0</number>
+         </property>
+         <property name="rightMargin">
+          <number>0</number>
+         </property>
+         <property name="bottomMargin">
+          <number>0</number>
+         </property>
+         <item>
+          <widget class="QPushButton" name="no_tags_button">
+           <property name="text">
+            <string>No Tags</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QLineEdit" name="tags_text"/>
+         </item>
+        </layout>
+       </widget>
       </item>
       <item>
        <widget class="QListWidget" name="tags_list"/>
@@ -493,7 +676,7 @@
      </layout>
     </widget>
    </item>
-   <item row="11" column="0" colspan="2">
+   <item row="10" column="0" colspan="2">
     <widget class="QFrame" name="frame_3">
      <property name="frameShape">
       <enum>QFrame::StyledPanel</enum>
