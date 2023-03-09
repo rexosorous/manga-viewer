@@ -438,7 +438,7 @@ class DBHandler:
         Args:
             data (dict)
         """
-        self.db.execute('UPDATE books SET name=?, series=?, series_order=?, rating=?, notes=? WHERE id=?', (data['title'], data['series'], data['series_order'], data['rating'], data['notes'], data['id']))
+        self.db.execute('UPDATE books SET name=?, alt_name=?, series=?, series_order=?, rating=?, notes=? WHERE id=?', (data['title'], data['alt_title'], data['series'], data['series_order'], data['rating'], data['notes'], data['id']))
 
         self.db.execute('DELETE FROM books_artists WHERE bookID=?', (data['id'],))
         for artist in data['artists']:

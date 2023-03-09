@@ -130,6 +130,7 @@ class DetailsPanel(QFrame, Ui_details_panel):
 
         self.cover_img.setPixmap(cover_img)
         self.title_text.setText(book_info['name'])
+        self.alt_title_text.setText(book_info['alt_name'])
         self.series_dropdown.setCurrentText(book_info['series'].text())
         self.order_number.setValue((0 if not book_info['series_order'] else book_info['series_order']))
         self.rating_number.setValue((0 if not book_info['rating'] else book_info['rating']))
@@ -260,6 +261,7 @@ class DetailsPanel(QFrame, Ui_details_panel):
         data = dict()
         data['id'] = self.book_id
         data['title'] = self.title_text.text()
+        data['alt_title'] = self.alt_title_text.text()
         data['series'] = self.series_dropdown.currentData()
         data['series_order'] = (self.order_number.value() if self.order_number.value() else None)
         data['rating'] = (self.rating_number.value() if self.rating_number.value() else None)
