@@ -15,7 +15,7 @@ class Signals(QObject):
         close_book_signal (pyqtSignal): emitted when a book is closed in the reader to open up the library
         update_metadata (pyqtSignal): emitted when changes are made to the metadata to update all metadata lists
     """
-    open_book_signal = pyqtSignal(str)
+    open_book_signal = pyqtSignal(int, str, str)
     close_book_signal = pyqtSignal()
     search_advanced = pyqtSignal(object)
     update_metadata = pyqtSignal()

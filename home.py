@@ -1,4 +1,5 @@
 # standard libraries
+from datetime import datetime
 from functools import partial
 from os import listdir
 from os.path import isdir
@@ -14,7 +15,6 @@ from PyQt5.QtWidgets import QMessageBox
 # local modules
 import constants as const
 import database
-from datetime import datetime
 from details_panel import DetailsPanel
 from metadata_panel import MetadataPanel
 from search_panel import SearchPanel
@@ -299,7 +299,7 @@ class Home(QMainWindow, Ui_MainWindow):
             source (QFrame): The frames that represent the book that was double clicked
             event (QMouseEvent): The event that was emitted. Unused, but required by PyQt5
         """
-        self.signals.open_book_signal.emit(f'{self.directory}/{source.folder}')
+        self.signals.open_book_signal.emit(source.id_, source.title, f'{self.directory}/{source.folder}')
 
 
 

@@ -11,7 +11,7 @@ class Colors():
     PRIMARY = QtGui.QColor.fromRgb(50, 50, 50)
     SECONDARY = QtGui.QColor.fromRgb(125, 125, 125)
     BACKGROUND = QtGui.QColor.fromRgb(75, 75, 75)
-    HIGHLIGHT = QtGui.QColor.fromRgb(230, 230, 0)
+    HIGHLIGHT = QtGui.QColor.fromRgb(129, 237, 247)
     AND = QtGui.QColor.fromRgb(0, 255, 0)
     NOT = QtGui.QColor.fromRgb(255, 0, 0)
     OR = QtGui.QColor.fromRgb(0, 255, 255)

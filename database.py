@@ -305,6 +305,12 @@ class DBHandler:
 
 
 
+    def get_series_for(self, book_id: int):
+        self.db.execute(f'SELECT connections.id, connections.name, connections.series_order, connections.directory FROM books selected JOIN books connections ON selected.series = connections.series WHERE selected.id = {book_id} ORDER BY connections.series_order ASC')
+        return self.db.fetchall()
+
+
+
     def get_book_info(self, book_id: int):
         """Returns all relevant information about a book.
 
