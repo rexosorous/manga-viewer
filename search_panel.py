@@ -164,8 +164,8 @@ class SearchPanel(QFrame, Ui_search_panel):
         if filter_type is None:
             filter_type = self.filter_type
 
-        if item.background() == colors[filter_type]: # if we're applying a filter that is already applied to this item
-            return
+        if item.background() == colors[filter_type]: # if we're applying a filter that is already applied to this item, reset selection
+            filter_type = const.Filters.NONE
 
         # apply filter to this item
         item.setBackground(colors[filter_type])
