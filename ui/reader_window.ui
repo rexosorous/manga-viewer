@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>865</width>
-    <height>654</height>
+    <width>1600</width>
+    <height>900</height>
    </rect>
   </property>
   <property name="palette">
@@ -328,8 +328,8 @@
         <rect>
          <x>0</x>
          <y>0</y>
-         <width>663</width>
-         <height>631</height>
+         <width>1398</width>
+         <height>877</height>
         </rect>
        </property>
        <layout class="QVBoxLayout" name="verticalLayout_3">
@@ -354,7 +354,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>865</width>
+     <width>1600</width>
      <height>21</height>
     </rect>
    </property>

@@ -21,24 +21,24 @@ sigs = signals.Signals()
 
 home_window = home.Home(sigs, const.directory)
 home_window.showMaximized()
-reader_window = reader.Reader(sigs, home_window.db)
+# reader_window = reader.Reader(sigs, home_window.db)
 
-stack = QStackedWidget()
-stack.addWidget(home_window)
-stack.addWidget(reader_window)
-stack.setWindowTitle("Manga Viewer")
+# stack = QStackedWidget()
+# stack.addWidget(home_window)
+# stack.addWidget(reader_window)
+# stack.setWindowTitle("Manga Viewer")
 
-def open_reader(book_id: int):
-    reader_window.open_book(book_id)
-    stack.setCurrentIndex(1)
-def close_reader():
-    stack.setCurrentIndex(0)
-sigs.open_book_signal.connect(open_reader)
-sigs.close_book_signal.connect(close_reader)
+# def open_reader(book_id: int):
+#     reader_window.open_book(book_id)
+#     stack.setCurrentIndex(1)
+# def close_reader():
+#     stack.setCurrentIndex(0)
+# sigs.open_book_signal.connect(open_reader)
+# sigs.close_book_signal.connect(close_reader)
 
-stack.setPalette(const.Palettes.BACKGROUND)
+# stack.setPalette(const.Palettes.BACKGROUND)
 
 
-stack.showMaximized()
+# stack.showMaximized()
 
 sys.exit(app.exec())

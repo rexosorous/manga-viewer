@@ -109,7 +109,7 @@ class Reader(QMainWindow, Ui_MainWindow):
 
     def open_book_in_series(self, item):
         book = self.series_list.itemWidget(item)
-        self.open_book(book.book_id, book.book_title, f'{const.directory}/{book.book_directory}')
+        self.open_book(book.book_id)
 
 
 
@@ -120,6 +120,7 @@ class Reader(QMainWindow, Ui_MainWindow):
             book_directory (str): the relative directory to find the book
         """
         book = self.db.get_book(book_id)
+        self.setWindowTitle(book['name'])
         self.book_id = book['id']
         self.book_title = book['name']
         self.directory = f'{const.directory}/{book["directory"]}'
@@ -234,15 +235,6 @@ class Reader(QMainWindow, Ui_MainWindow):
         self.image.setPixmap(pixmap)
         self.scrollArea.verticalScrollBar().setSliderPosition(0)
         self.db.set_bookmark(self.book_id, page)
-
-
-
-    def close(self):
-        """Closes this window and switches back to the home window
-
-        Called when the back button is pressed or the escape key is pressed
-        """
-        self.signals.close_book_signal.emit()
 
 
 

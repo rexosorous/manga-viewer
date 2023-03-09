@@ -19,6 +19,7 @@ import constants as const
 import database
 from details_panel import DetailsPanel
 from metadata_panel import MetadataPanel
+import reader
 from search_panel import SearchPanel
 import spines
 from ui.main_window import Ui_MainWindow
@@ -324,6 +325,8 @@ class Home(QMainWindow, Ui_MainWindow):
 
 
     def resizeEvent(self, event):
+        if event.size().width() < 1100: # i don't know why but this is called on startup with a small size
+            return
         self.resize_gallery(event.size().width())
 
 
@@ -362,7 +365,9 @@ class Home(QMainWindow, Ui_MainWindow):
             source (QFrame): The frames that represent the book that was double clicked
             event (QMouseEvent): The event that was emitted. Unused, but required by PyQt5
         """
-        self.signals.open_book_signal.emit(source.id_)
+        reader_window = reader.Reader(self.signals, self.db)
+        reader_window.open_book(source.id_)
+        reader_window.show()
 
 
 

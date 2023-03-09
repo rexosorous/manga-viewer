@@ -47,6 +47,7 @@ class BookSpine(QtWidgets.QFrame):
         self.setup_img()
         self.setup_title()
         self.set_db_data(book_id, date_added, title, alt_title, series, series_order, pages, rating, notes, folder, zoom, bookmark)
+        self.resize(QtWidgets.QApplication.primaryScreen().size().width())
 
     def set_db_data(self, book_id: int, date_added: datetime, title: str, alt_title: str, series: int, series_order: float, pages: int, rating: int, notes: str, folder: str, zoom: float, bookmark: int):
         self.id_ = book_id
