@@ -14,8 +14,7 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 class Ui_details_panel(object):
     def setupUi(self, details_panel):
         details_panel.setObjectName("details_panel")
-        details_panel.resize(352, 958)
-        details_panel.setMaximumSize(QtCore.QSize(352, 16777215))
+        details_panel.resize(1600, 955)
         details_panel.setFrameShape(QtWidgets.QFrame.Box)
         self.formLayout = QtWidgets.QFormLayout(details_panel)
         self.formLayout.setContentsMargins(-1, 0, -1, -1)

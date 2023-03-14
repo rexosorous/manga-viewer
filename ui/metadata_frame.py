@@ -14,8 +14,7 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 class Ui_metadata_panel(object):
     def setupUi(self, metadata_panel):
         metadata_panel.setObjectName("metadata_panel")
-        metadata_panel.resize(352, 958)
-        metadata_panel.setMaximumSize(QtCore.QSize(352, 16777215))
+        metadata_panel.resize(1600, 900)
         metadata_panel.setFrameShape(QtWidgets.QFrame.Box)
         self.formLayout = QtWidgets.QFormLayout(metadata_panel)
         self.formLayout.setContentsMargins(-1, 0, -1, -1)

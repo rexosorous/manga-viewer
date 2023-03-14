@@ -14,8 +14,7 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 class Ui_search_panel(object):
     def setupUi(self, search_panel):
         search_panel.setObjectName("search_panel")
-        search_panel.resize(351, 958)
-        search_panel.setMaximumSize(QtCore.QSize(352, 16777215))
+        search_panel.resize(1600, 900)
         search_panel.setFrameShape(QtWidgets.QFrame.Box)
         self.formLayout = QtWidgets.QFormLayout(search_panel)
         self.formLayout.setContentsMargins(-1, 0, -1, -1)
