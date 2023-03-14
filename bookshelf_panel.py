@@ -53,6 +53,7 @@ class BookshelfPanel(QFrame, Ui_bookshelf_panel):
         self.signals.search_advanced.connect(self.generate_books)
         self.signals.delete_book_db.connect(self.delete_book_db) # from spines context menu
         self.signals.delete_book_disk.connect(self.delete_book_disk) # from spines context menu
+        self.signals.select_book.connect(self.select)
 
 
 
@@ -332,9 +333,6 @@ class BookshelfPanel(QFrame, Ui_bookshelf_panel):
         clear_selected = menu.addAction('Clear Selected')
         if (selection := menu.exec_(event.globalPos())):
             if selection == clear_filter:
-                pass
-                # self.show_advanced_search_panel()
-                # self.search_panel.populate_metadata()
-                # self.search_panel.submit()
+                self.signals.clear_filter.emit()
             if selection == clear_selected:
                 self.reset_selected()

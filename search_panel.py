@@ -83,6 +83,8 @@ class SearchPanel(QFrame, Ui_search_panel):
 
         # signals
         self.signals.update_metadata.connect(self.populate_metadata)
+        self.signals.clear_filter.connect(self.populate_metadata)
+        self.signals.clear_filter.connect(self.submit)
 
 
 
@@ -356,6 +358,7 @@ class SearchPanel(QFrame, Ui_search_panel):
                 filters[item.filter_type][list_picker[list_]].append(item.id_)
 
         self.signals.search_advanced.emit(filters)
+        self.signals.show_bookshelf_panel.emit()
 
 
 

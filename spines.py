@@ -123,6 +123,7 @@ class BookSpine(QtWidgets.QFrame):
     def context_menu(self, event):
         """Opens a context menu for the books.
 
+        "Edit Metadata": switches to details panel
         "Open Containing Folder": opens windows explorer to the folder that contains this book
         "Delete From DB": deletes this book from the database, but not from disk
         "Delete From DB and Disk": deletes this book from the database and all files from disk.
@@ -131,11 +132,15 @@ class BookSpine(QtWidgets.QFrame):
             event (QMouseEvent): The event that was emitted. Unused, but required by PyQt5
         """
         menu = QMenu()
+        edit = menu.addAction('Edit Metadata')
         open_ = menu.addAction('Open Containing Folder')
         delete_db = menu.addAction('Delete From DB')
         delete_disk = menu.addAction('Delete From DB and Disk')
         if (selection := menu.exec_(event.globalPos())):
-            if selection == open_:
+            if selection == edit:
+                self.signals.select_book.emit(self)
+                self.signals.show_details_panel.emit()
+            elif selection == open_:
                 startfile(relpath(f'{const.directory}/{self.folder}'))
             elif selection == delete_db:
                 self.signals.delete_book_db.emit(self)

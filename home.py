@@ -98,6 +98,10 @@ class Home(QMainWindow, Ui_MainWindow):
         self.advanced_search_button.clicked.connect(self.show_advanced_search_panel)
         self.metadata_button.clicked.connect(self.show_metadata_panel)
 
+        # signals
+        self.signals.show_details_panel.connect(self.show_details_panel)
+        self.signals.show_bookshelf_panel.connect(self.show_bookshelf_panel)
+
 
 
     def show_bookshelf_panel(self):

@@ -22,3 +22,7 @@ class Signals(QObject):
     depopulate_details = pyqtSignal()
     delete_book_db = pyqtSignal(object)
     delete_book_disk = pyqtSignal(object)
+    select_book = pyqtSignal(object)
+    show_details_panel = pyqtSignal()
+    show_bookshelf_panel = pyqtSignal()
+    clear_filter = pyqtSignal()
