@@ -35,6 +35,7 @@ class BookSpine(QtWidgets.QFrame):
         self.layout = QtWidgets.QVBoxLayout()
 
         self.signals = signals
+        self.row = None
         self.image = None
         self.loaded_image = None
         self.scale = QtWidgets.QDesktopWidget().screenGeometry(0).width() / 1920

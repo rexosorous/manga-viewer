@@ -106,6 +106,7 @@ class BookshelfPanel(QFrame, Ui_bookshelf_panel):
         for book in self.books:
             if book.hide_:
                 continue
+            book.row = row_pos
             self.bookshelf_layout.addWidget(book, row_pos, col_pos)
 
             # calculate next position
@@ -283,6 +284,8 @@ class BookshelfPanel(QFrame, Ui_bookshelf_panel):
         """Randomly selects a book from the list
         """
         self.select(random.choice(self.books))
+        row_height = self.books[0].height() + self.bookshelf_layout.verticalSpacing()
+        self.bookshelf_scroll_area.verticalScrollBar().setValue(self.selected.row * row_height)
 
 
 
