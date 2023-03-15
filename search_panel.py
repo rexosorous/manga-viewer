@@ -357,6 +357,10 @@ class SearchPanel(QFrame, Ui_search_panel):
                     continue
                 filters[item.filter_type][list_picker[list_]].append(item.id_)
 
+        filters[const.Filters.AND]['characters'] = [[1, 2, 3], [4]]
+        filters[const.Filters.NOT]['characters'] = [[1, 2, 3], [4]]
+        filters[const.Filters.OR]['characters'] = [[1, 2, 3], [4]]
+
         self.signals.search_advanced.emit(filters)
         self.signals.show_bookshelf_panel.emit()
 

@@ -137,6 +137,31 @@ class DBHandler:
             )
         ''')
 
+        self.db.execute('''
+            CREATE TABLE IF NOT EXISTS characters
+            (
+                id INTEGER PRIMARY KEY,
+                bookID INTEGER
+            )
+        ''')
+
+        self.db.execute('''
+            CREATE TABLE IF NOT EXISTS traits
+            (
+                id INTEGER PRIMARY KEY,
+                name TEXT,
+                description TEXT
+            )
+        ''')
+
+        self.db.execute('''
+            CREATE TABLE IF NOT EXISTS characters_traits
+            (
+                characterID INTEGER,
+                traitID INTEGER
+            )
+        ''')
+
         self.conn.commit()
 
 
@@ -229,6 +254,7 @@ class DBHandler:
         not_block = []
         or_block = []
         count_block = []
+        character_block = ''
 
         # AND SIMPLE
         and_block.append(f'(books.name LIKE "%{and_data["title"]}%" OR books.alt_name LIKE "%{and_data["title"]}%")') if and_data['title'] else None
@@ -261,17 +287,27 @@ class DBHandler:
         elif and_data['tags']:
             and_block.append('(' + '\n\tOR '.join([f'tagID={id_}' for id_ in and_data['tags']]) + ')')
 
+        if and_data['characters'] == None:
+            # and_block.append('') TODO
+            pass
+        elif and_data['characters']:
+            character_block += '\n\tbooks.id IN ' +  '\n\tAND books.id IN '.join([f'\n\t\t(SELECT DISTINCT bookId\n\t\tFROM characters_traits LEFT JOIN characters ON characters.id = characterID\n\t\tWHERE traitID = {" OR traitID = ".join([str(trait_id) for trait_id in character])}\n\t\tGROUP BY characterID\n\t\tHAVING COUNT(characterID) = {len(character)})' for character in and_data['characters']])
+
         # NOT
         not_block += [f'artistID={id_}' for id_ in not_data['artists']]
         not_block += [f'books.series={id_}' for id_ in not_data['series']]
         not_block += [f'genreID={id_}' for id_ in not_data['genres']]
         not_block += [f'tagID={id_}' for id_ in not_data['tags']]
+        character_block += '\n\tAND books.id NOT IN ' if character_block else '\n\tbooks.id NOT IN '
+        character_block += '\n\tAND books.id NOT IN '.join([f'\n\t\t(SELECT DISTINCT bookId\n\t\tFROM characters_traits LEFT JOIN characters ON characters.id = characterID\n\t\tWHERE traitID = {" OR traitID = ".join([str(trait_id) for trait_id in character])}\n\t\tGROUP BY characterID\n\t\tHAVING COUNT(characterID) = {len(character)})' for character in and_data['characters']])
 
         # OR
         or_block += [f'artistID={id_}' for id_ in or_data['artists']]
         or_block += [f'books.series={id_}' for id_ in or_data['series']]
         or_block += [f'genreID={id_}' for id_ in or_data['genres']]
         or_block += [f'tagID={id_}' for id_ in or_data['tags']]
+        character_block += '\n\tOR books.id IN ' if character_block else '\n\tbooks.id IN '
+        character_block += '\n\tOR books.id IN '.join([f'\n\t\t(SELECT DISTINCT bookId\n\t\tFROM characters_traits LEFT JOIN characters ON characters.id = characterID\n\t\tWHERE traitID = {" OR traitID = ".join([str(trait_id) for trait_id in character])}\n\t\tGROUP BY characterID\n\t\tHAVING COUNT(characterID) = {len(character)})' for character in and_data['characters']])
 
         # count
         count_block.append(f'COUNT(DISTINCT artistID)={len(and_data["artists"])}') if and_data['artists'] and len(and_data['artists']) > 1 else None
@@ -297,7 +333,8 @@ class DBHandler:
         not_string = '\nEXCEPT\n\t' + base_query.replace('\n', '\n\t') + '\n\tWHERE\n\t\t' + '\n\t\tOR '.join(not_block) if not_block else ''
         or_string = '\n\tOR '.join(or_block)
 
-        query = base_query + and_string + count_string + not_string
+        character_block = '\nWHERE' + character_block if not and_string else '\n\tAND ' + character_block
+        query = base_query + and_string + character_block + count_string + not_string
         query = ('SELECT DISTINCT books.* FROM books\n'
         '\tINNER JOIN\n\t\t(' + query.replace("\n", "\n\t\t") + ') AS temp ON temp.id=books.id\n'
         '\tLEFT JOIN books_artists ON books_artists.bookID=books.id\n'
@@ -402,7 +439,7 @@ class DBHandler:
         """
         if table == 'books':
             # deletes the book entry and all entries related to it in books_artists, books_genres, books_tags
-            self.db.exceute('DELETE FROM books_artists WHERE bookID=?', (id_,))
+            self.db.execute('DELETE FROM books_artists WHERE bookID=?', (id_,))
             self.db.execute('DELETE FROM books_genres WHERE bookID=?', (id_,))
             self.db.execute('DELETE FROM books_tags WHERE bookID=?', (id_,))
             self.db.execute('DELETE FROM books WHERE id=?', (id_,))
@@ -429,6 +466,17 @@ class DBHandler:
         """
         self.db.execute(f'UPDATE {table} SET name="{new_name}" WHERE id={id_}')
         self.conn.commit()
+
+
+
+    def add_character(self, book_id: int, traits: list[int]) -> int:
+        pass
+
+
+
+    def remove_character(self, character_id: int):
+        # also needs to delete charactesr properly, delete from characters where bookID is null
+        pass
 
 
 
