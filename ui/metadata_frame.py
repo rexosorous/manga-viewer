@@ -28,7 +28,7 @@ class Ui_metadata_panel(object):
         self.label_9.setObjectName("label_9")
         self.verticalLayout.addWidget(self.label_9)
         self.frame = QtWidgets.QFrame(metadata_panel)
-        self.frame.setFrameShape(QtWidgets.QFrame.StyledPanel)
+        self.frame.setFrameShape(QtWidgets.QFrame.Box)
         self.frame.setFrameShadow(QtWidgets.QFrame.Plain)
         self.frame.setObjectName("frame")
         self.horizontalLayout = QtWidgets.QHBoxLayout(self.frame)

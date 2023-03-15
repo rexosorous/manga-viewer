@@ -92,6 +92,7 @@ class BookshelfPanel(QFrame, Ui_bookshelf_panel):
             popup.setStandardButtons(QMessageBox.Close)
             popup.exec_()
 
+        self.clear_mem()
         self.populate()
 
 
@@ -181,8 +182,13 @@ class BookshelfPanel(QFrame, Ui_bookshelf_panel):
         """Clears the gallery of all books
         """
         for i in reversed(range(self.bookshelf_layout.count())):
-            self.bookshelf_layout.itemAt(i).widget().clear_mem() # fixes memory leak
             self.bookshelf_layout.itemAt(i).widget().setParent(None)
+
+
+
+    def clear_mem(self):
+        for i in reversed(range(self.bookshelf_layout.count())):
+            self.bookshelf_layout.itemAt(i).widget().clear_mem() # fixes memory leak
 
 
 
