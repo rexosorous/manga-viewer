@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Form implementation generated from reading ui file 'metadata_frame.ui'
+# Form implementation generated from reading ui file 'ui/metadata_frame.ui'
 #
 # Created by: PyQt5 UI code generator 5.15.9
 #
@@ -172,6 +172,41 @@ class Ui_metadata_panel(object):
         self.tags_list.setObjectName("tags_list")
         self.verticalLayout_9.addWidget(self.tags_list)
         self.horizontalLayout.addWidget(self.frame_17)
+        self.line_4 = QtWidgets.QFrame(self.frame)
+        self.line_4.setFrameShadow(QtWidgets.QFrame.Plain)
+        self.line_4.setFrameShape(QtWidgets.QFrame.VLine)
+        self.line_4.setObjectName("line_4")
+        self.horizontalLayout.addWidget(self.line_4)
+        self.frame_2 = QtWidgets.QFrame(self.frame)
+        self.frame_2.setFrameShape(QtWidgets.QFrame.StyledPanel)
+        self.frame_2.setFrameShadow(QtWidgets.QFrame.Raised)
+        self.frame_2.setObjectName("frame_2")
+        self.verticalLayout_2 = QtWidgets.QVBoxLayout(self.frame_2)
+        self.verticalLayout_2.setContentsMargins(0, 0, 0, 0)
+        self.verticalLayout_2.setSpacing(0)
+        self.verticalLayout_2.setObjectName("verticalLayout_2")
+        self.label = QtWidgets.QLabel(self.frame_2)
+        self.label.setObjectName("label")
+        self.verticalLayout_2.addWidget(self.label)
+        self.frame_3 = QtWidgets.QFrame(self.frame_2)
+        self.frame_3.setFrameShape(QtWidgets.QFrame.StyledPanel)
+        self.frame_3.setFrameShadow(QtWidgets.QFrame.Raised)
+        self.frame_3.setObjectName("frame_3")
+        self.horizontalLayout_2 = QtWidgets.QHBoxLayout(self.frame_3)
+        self.horizontalLayout_2.setContentsMargins(0, 0, 0, 0)
+        self.horizontalLayout_2.setSpacing(0)
+        self.horizontalLayout_2.setObjectName("horizontalLayout_2")
+        self.traits_text = QtWidgets.QLineEdit(self.frame_3)
+        self.traits_text.setObjectName("traits_text")
+        self.horizontalLayout_2.addWidget(self.traits_text)
+        self.traits_submit = QtWidgets.QPushButton(self.frame_3)
+        self.traits_submit.setObjectName("traits_submit")
+        self.horizontalLayout_2.addWidget(self.traits_submit)
+        self.verticalLayout_2.addWidget(self.frame_3)
+        self.traits_list = QtWidgets.QListWidget(self.frame_2)
+        self.traits_list.setObjectName("traits_list")
+        self.verticalLayout_2.addWidget(self.traits_list)
+        self.horizontalLayout.addWidget(self.frame_2)
         self.verticalLayout.addWidget(self.frame)
 
         self.retranslateUi(metadata_panel)
@@ -193,3 +228,5 @@ class Ui_metadata_panel(object):
         self.label_13.setText(_translate("metadata_panel", "Tags"))
         self.tags_submit.setText(_translate("metadata_panel", "Create"))
         self.tags_list.setSortingEnabled(True)
+        self.label.setText(_translate("metadata_panel", "Character Traits"))
+        self.traits_submit.setText(_translate("metadata_panel", "Create"))

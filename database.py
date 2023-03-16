@@ -213,6 +213,12 @@ class DBHandler:
             item = ListItem(entry['id'], entry['name'], 'tags')
             data['tags'].append(item)
 
+        self.db.execute('SELECT * FROM traits ORDER BY name COLLATE NOCASE')
+        temp = self.db.fetchall()
+        for entry in temp:
+            item = ListItem(entry['id'], entry['name'], 'traits')
+            data['traits'].append(item)
+
         return data
 
 
@@ -404,6 +410,14 @@ class DBHandler:
         for t in tags:
             info['tags'].append(ListItem(t['id'], t['name'], 'tags'))
 
+        self.db.execute('SELECT characterID, traits.id, name FROM traits INNER JOIN characters_traits ON traits.id = traitID INNER JOIN characters ON characters.id = characterID WHERE bookID = ?', (book_id,))
+        characters = self.db.fetchall()
+        info['characters'] = dict()
+        for c in characters:
+            if c['characterID'] not in info['characters']:
+                info['characters'][c['characterID']] = []
+            info['characters'][c['characterID']].append(ListItem(c['id'], c['name'], 'traits'))
+
         return info
 
 
@@ -451,6 +465,11 @@ class DBHandler:
             # deletes the entry and all entries related to it in its respective many-to-many through table
             self.db.execute(f'DELETE FROM books_{table} WHERE {table[:-1]}ID={id_}')
             self.db.execute(f'DELETE FROM {table} WHERE id={id_}')
+        elif table == 'traits':
+            # deletes the entry and removes the trait from all characters and deletes any characters that don't have any traits
+            self.db.execute(f'DELETE FROM characters_traits WHERE traitID={id_}')
+            self.db.execute('DELETE FROM characters WHERE id NOT IN (SELECT characterID FROM characters_traits)')
+            self.db.execute(f'DELETE FROM traits WHERE id={id_}')
 
         self.conn.commit()
 
@@ -475,7 +494,7 @@ class DBHandler:
 
 
     def remove_character(self, character_id: int):
-        # also needs to delete charactesr properly, delete from characters where bookID is null
+        # also needs to delete characters properly, delete from characters where bookID is null
         pass
 
 
@@ -515,6 +534,15 @@ class DBHandler:
         for tag in data['tags']:
             self.db.execute('INSERT INTO books_tags VALUES(?, ?)', (data['id'], tag))
 
+        self.db.execute(f'DELETE FROM characters_traits WHERE characterID IN (SELECT id FROM characters WHERE bookID = {data["id"]})')
+        self.db.execute(f'DELETE FROM characters WHERE bookID = {data["id"]}')
+        for character, traits in data['characters'].items():
+            if not traits: # don't add characters without traits
+                continue
+            self.db.execute(f'INSERT INTO characters VALUES({character})')
+            for t in traits:
+                self.db.execute(f'INSERT INTO characters_traits VALUES({character}, {t})')
+
         self.conn.commit()
 
 
@@ -529,6 +557,8 @@ class DBHandler:
         self.db.execute(f'DELETE FROM books_artists WHERE bookID={id_}')
         self.db.execute(f'DELETE FROM books_genres WHERE bookID={id_}')
         self.db.execute(f'DELETE FROM books_tags WHERE bookID={id_}')
+        self.db.execute(f'DELETE FROM characters_traits WHERE characterID IN (SELECT id FROM characters WHERE bookID={id_})')
+        self.db.execute(f'DELETE FROM charaters WHERE bookID={id_}')
         self.conn.commit()
 
 
