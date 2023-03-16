@@ -65,6 +65,8 @@ class DetailsPanel(QFrame, Ui_details_panel):
             self.genres_list.addItem(genre)
         for tag in metadata['tags']:
             self.tags_list.addItem(tag)
+        for trait in metadata['traits']:
+            self.traits_list.addItem(trait)
 
 
 
@@ -108,6 +110,8 @@ class DetailsPanel(QFrame, Ui_details_panel):
         self.genres_list.clear()
         self.tags_text.clear()
         self.tags_list.clear()
+        self.traits_text.clear()
+        self.traits_list.clear()
         self.notes_text.clear()
 
 

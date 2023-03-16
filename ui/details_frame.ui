@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>1600</width>
-    <height>971</height>
+    <height>1082</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -570,7 +570,7 @@
               <x>0</x>
               <y>0</y>
               <width>305</width>
-              <height>820</height>
+              <height>931</height>
              </rect>
             </property>
            </widget>
@@ -635,7 +635,7 @@
              <widget class="QLineEdit" name="traits_text"/>
             </item>
             <item>
-             <widget class="QTextBrowser" name="traits_list"/>
+             <widget class="QListWidget" name="traits_list"/>
             </item>
             <item>
              <widget class="QPushButton" name="submit_button">

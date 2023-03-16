@@ -186,7 +186,8 @@ class DBHandler:
             'artists': [],
             'series': [],
             'genres': [],
-            'tags': []
+            'tags': [],
+            'traits': []
         }
 
         self.db.execute('SELECT * FROM artists ORDER BY name COLLATE NOCASE')

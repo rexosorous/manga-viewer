@@ -14,7 +14,7 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 class Ui_details_panel(object):
     def setupUi(self, details_panel):
         details_panel.setObjectName("details_panel")
-        details_panel.resize(1600, 971)
+        details_panel.resize(1600, 1082)
         self.verticalLayout = QtWidgets.QVBoxLayout(details_panel)
         self.verticalLayout.setSpacing(15)
         self.verticalLayout.setObjectName("verticalLayout")
@@ -274,7 +274,7 @@ class Ui_details_panel(object):
         self.character_scroll_area.setWidgetResizable(True)
         self.character_scroll_area.setObjectName("character_scroll_area")
         self.character_scroll_layout = QtWidgets.QWidget()
-        self.character_scroll_layout.setGeometry(QtCore.QRect(0, 0, 305, 820))
+        self.character_scroll_layout.setGeometry(QtCore.QRect(0, 0, 305, 931))
         self.character_scroll_layout.setObjectName("character_scroll_layout")
         self.character_scroll_area.setWidget(self.character_scroll_layout)
         self.verticalLayout_8.addWidget(self.character_scroll_area)
@@ -300,7 +300,7 @@ class Ui_details_panel(object):
         self.traits_text = QtWidgets.QLineEdit(self.frame_13)
         self.traits_text.setObjectName("traits_text")
         self.verticalLayout_10.addWidget(self.traits_text)
-        self.traits_list = QtWidgets.QTextBrowser(self.frame_13)
+        self.traits_list = QtWidgets.QListWidget(self.frame_13)
         self.traits_list.setObjectName("traits_list")
         self.verticalLayout_10.addWidget(self.traits_list)
         self.submit_button = QtWidgets.QPushButton(self.frame_13)

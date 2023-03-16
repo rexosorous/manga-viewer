@@ -100,6 +100,8 @@ class SearchPanel(QFrame, Ui_search_panel):
             self.genres_list.addItem(item)
         for item in metadata['tags']:
             self.tags_list.addItem(item)
+        for item in metadata['traits']:
+            self.traits_list.addItem(item)
 
 
 
@@ -131,6 +133,8 @@ class SearchPanel(QFrame, Ui_search_panel):
         self.tags_text.setEnabled(True)
         self.tags_list.clear()
         self.tags_list.setEnabled(True)
+        self.traits_text.clear()
+        self.traits_list.clear()
 
 
 

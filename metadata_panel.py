@@ -54,18 +54,21 @@ class MetadataPanel(QFrame, Ui_metadata_panel):
         self.series_submit.clicked.connect(partial(self.create_metadata, self.series_text))
         self.genres_submit.clicked.connect(partial(self.create_metadata, self.genres_text))
         self.tags_submit.clicked.connect(partial(self.create_metadata, self.tags_text))
+        self.traits_submit.clicked.connect(partial(self.create_metadata, self.traits_text))
 
         # pressing enter in line edits (has the same functionality as the submit button)
         self.artists_text.returnPressed.connect(partial(self.create_metadata, self.artists_text))
         self.series_text.returnPressed.connect(partial(self.create_metadata, self.series_text))
         self.genres_text.returnPressed.connect(partial(self.create_metadata, self.genres_text))
         self.tags_text.returnPressed.connect(partial(self.create_metadata, self.tags_text))
+        self.traits_text.returnPressed.connect(partial(self.create_metadata, self.traits_text))
 
         # right click context menu
         self.artists_list.contextMenuEvent = partial(self.context_menu, self.artists_list)
         self.series_list.contextMenuEvent = partial(self.context_menu, self.series_list)
         self.genres_list.contextMenuEvent = partial(self.context_menu, self.genres_list)
         self.tags_list.contextMenuEvent = partial(self.context_menu, self.tags_list)
+        self.traits_list.contextMenuEvent = partial(self.context_menu, self.traits_list)
 
         # signals
         self.signals.update_metadata.connect(self.populate_metadata)
@@ -86,6 +89,8 @@ class MetadataPanel(QFrame, Ui_metadata_panel):
             self.genres_list.addItem(item)
         for item in metadata['tags']:
             self.tags_list.addItem(item)
+        for item in metadata['traits']:
+            self.traits_list.addItem(item)
 
 
 
@@ -94,6 +99,7 @@ class MetadataPanel(QFrame, Ui_metadata_panel):
         self.series_list.clear()
         self.genres_list.clear()
         self.tags_list.clear()
+        self.traits_list.clear()
 
 
 
