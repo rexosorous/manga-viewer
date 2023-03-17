@@ -3,12 +3,64 @@ from datetime import datetime
 from functools import partial
 
 # dependencies
+from PyQt5.QtGui import QPalette
+from PyQt5.QtWidgets import QBoxLayout
 from PyQt5.QtWidgets import QFrame
+from PyQt5.QtWidgets import QListWidget
+from PyQt5.QtWidgets import QMenu
 from PyQt5.QtWidgets import QMessageBox
 
 # local modules
 import constants as const
 from ui.details_frame import Ui_details_panel
+
+
+
+'''
+TODO:
+    - right click menu for
+        * remove trait
+        * deselect
+        * delete
+        * add
+'''
+
+
+class CharacterCard(QListWidget):
+    def __init__(self, signals):
+        self.signals = signals
+        super().__init__()
+        self.setFixedHeight(200)
+        self.setAutoFillBackground(True)
+        self.setSortingEnabled(True)
+        self.itemDoubleClicked.connect(self.remove_item)
+
+    def select(self):
+        palette = QPalette()
+        palette.setColor(QPalette.ColorRole.Base, const.Colors.HIGHLIGHT)
+        self.setPalette(palette)
+
+    def deselect(self):
+        self.setPalette(QPalette())
+
+    def remove_item(self):
+        self.takeItem(self.currentRow())
+
+    def mousePressEvent(self, e) -> None:
+        self.signals.test.emit(self)
+        return super().mousePressEvent(e)
+
+    def mouseDoubleClickEvent(self, e) -> None:
+        self.remove_item()
+
+    def contextMenuEvent(self, event):
+        menu = QMenu()
+        delete = menu.addAction('Delete Character')
+        if (selection := menu.exec_(event.globalPos())):
+            if selection == delete:
+                self.setParent(None)
+
+
 
 
 
@@ -43,6 +95,9 @@ class DetailsPanel(QFrame, Ui_details_panel):
         self.db = db
         self.signals = signals
         self.book_id = -1
+        self.selected_character = None
+        self.character_scroll_layout.setDirection(QBoxLayout.BottomToTop)
+        self.character_scroll_layout.addStretch()
         self.populate_metadata()
         self.connect_events()
 
@@ -75,24 +130,29 @@ class DetailsPanel(QFrame, Ui_details_panel):
         self.artists_text.textChanged.connect(partial(self.search_list, self.artists_list))
         self.genres_text.textChanged.connect(partial(self.search_list, self.genres_list))
         self.tags_text.textChanged.connect(partial(self.search_list, self.tags_list))
+        self.traits_text.textChanged.connect(partial(self.search_list, self.traits_list))
 
         # hitting enter in the search bars
         self.artists_text.returnPressed.connect(partial(self.apply_metadata_text, self.artists_text, self.artists_list))
         self.genres_text.returnPressed.connect(partial(self.apply_metadata_text, self.genres_text, self.genres_list))
         self.tags_text.returnPressed.connect(partial(self.apply_metadata_text, self.tags_text, self.tags_list))
+        self.traits_text.returnPressed.connect(partial(self.add_trait_to_character, self.traits_list))
 
         # double clicking a list item
         self.artists_list.itemDoubleClicked.connect(partial(self.apply_metadata, self.artists_list))
         self.genres_list.itemDoubleClicked.connect(partial(self.apply_metadata, self.genres_list))
         self.tags_list.itemDoubleClicked.connect(partial(self.apply_metadata, self.tags_list))
+        self.traits_list.itemDoubleClicked.connect(self.add_trait_to_character)
 
         # buttons
         self.submit_button.clicked.connect(self.submit)
+        self.add_character_button.clicked.connect(self.add_character)
 
         # signals
         self.signals.populate_details.connect(self.populate_book_info)
         self.signals.depopulate_details.connect(self.cleanse_details)
         self.signals.update_metadata.connect(self.update_metadata)
+        self.signals.test.connect(self.select_character)
 
 
 
@@ -113,6 +173,9 @@ class DetailsPanel(QFrame, Ui_details_panel):
         self.traits_text.clear()
         self.traits_list.clear()
         self.notes_text.clear()
+        for i in reversed(range(self.character_scroll_layout.count())):
+            if (item := self.character_scroll_layout.itemAt(i).widget()) != None:
+                item.setParent(None)
 
 
 
@@ -158,6 +221,11 @@ class DetailsPanel(QFrame, Ui_details_panel):
             if item in book_info['tags']:
                 self.apply_metadata(self.tags_list, item)
 
+        for character_id, traits in book_info['characters'].items():
+            character = self.add_character()
+            for trait in traits:
+                character.addItem(trait)
+
 
 
     def cleanse_details(self):
@@ -166,6 +234,7 @@ class DetailsPanel(QFrame, Ui_details_panel):
         Executed when a book is deselected in the gallery
         """
         self.book_id = -1
+        self.selected_character = None
         self.populate_metadata()
 
 
@@ -244,6 +313,41 @@ class DetailsPanel(QFrame, Ui_details_panel):
 
 
 
+    def add_character(self) -> CharacterCard:
+        character = CharacterCard(self.signals)
+        self.character_scroll_layout.addWidget(character)
+        self.select_character(character)
+        return character
+
+
+
+    def select_character(self, source: CharacterCard):
+        if self.selected_character != None:
+            self.selected_character.deselect()
+        source.select()
+        self.selected_character = source
+
+
+
+    def add_trait_to_character(self, trait):
+        """adds the specified trait to the currently selected characer
+
+        Args:
+            trait (database.ListItem or QListWidget): QListWidget specifies self.traits_list and is triggered by hitting enter in the text box
+        """
+        if self.selected_character == None:
+            return
+        if type(trait) == QListWidget:
+            for i in range(trait.count()):
+                if not trait.item(i).isHidden():
+                    copy = trait.item(i).clone()
+                    break
+        else:
+            copy = trait.clone()
+        self.selected_character.addItem(copy)
+
+
+
     def submit(self):
         """Updates a book with new information.
         """
@@ -290,6 +394,19 @@ class DetailsPanel(QFrame, Ui_details_panel):
             if item.background() == const.Colors.AND:
                 data['tags'].append(item.id_)
 
+        data['characters'] = []
+        for i in range(self.character_scroll_layout.count()):
+            character = []
+            character_list = self.character_scroll_layout.itemAt(i).widget()
+            if character_list == None: # skip the stretch that was added
+                continue
+            for j in range(character_list.count()):
+                trait = character_list.item(j)
+                character.append(trait.id_)
+            if character:
+                data['characters'].append(character)
+
+
         # make sure title (required field) is filled
         if not data['title']:
             popup = QMessageBox()
@@ -311,3 +428,6 @@ class DetailsPanel(QFrame, Ui_details_panel):
         popup.setText(f'{data["title"]} updated successfully')
         popup.setStandardButtons(QMessageBox.Close)
         popup.exec_()
+
+
+

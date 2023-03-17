@@ -32,7 +32,8 @@ class ListItem(QListWidgetItem):
         self.filter_type = const.Filters.NONE
         self.setText(name)
 
-
+    def clone(self):
+        return ListItem(self.id_, self.text(), self.table)
 
     def __eq__(self, compare):
         if self.id_ == compare.id_:
@@ -537,12 +538,13 @@ class DBHandler:
 
         self.db.execute(f'DELETE FROM characters_traits WHERE characterID IN (SELECT id FROM characters WHERE bookID = {data["id"]})')
         self.db.execute(f'DELETE FROM characters WHERE bookID = {data["id"]}')
-        for character, traits in data['characters'].items():
-            if not traits: # don't add characters without traits
+        for character in data['characters']:
+            if not character: # don't add characters without traits
                 continue
-            self.db.execute(f'INSERT INTO characters VALUES({character})')
-            for t in traits:
-                self.db.execute(f'INSERT INTO characters_traits VALUES({character}, {t})')
+            self.db.execute(f'INSERT INTO characters(bookID) VALUES({data["id"]}) RETURNING *')
+            added_data = self.db.fetchone()
+            for trait in character:
+                self.db.execute(f'INSERT INTO characters_traits VALUES({added_data["id"]}, {trait})')
 
         self.conn.commit()
 

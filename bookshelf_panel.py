@@ -8,7 +8,6 @@ import random
 # dependencies
 from PyQt5.QtWidgets import QFrame
 from PyQt5.QtWidgets import QMenu
-from PyQt5.QtWidgets import QMenu
 from PyQt5.QtWidgets import QMessageBox
 
 # local modules

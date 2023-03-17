@@ -26,3 +26,4 @@ class Signals(QObject):
     show_details_panel = pyqtSignal()
     show_bookshelf_panel = pyqtSignal()
     clear_filter = pyqtSignal()
+    test = pyqtSignal(object)

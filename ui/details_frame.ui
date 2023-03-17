@@ -548,6 +548,12 @@
             </item>
             <item>
              <widget class="QPushButton" name="add_character_button">
+              <property name="sizePolicy">
+               <sizepolicy hsizetype="Maximum" vsizetype="Fixed">
+                <horstretch>0</horstretch>
+                <verstretch>0</verstretch>
+               </sizepolicy>
+              </property>
               <property name="layoutDirection">
                <enum>Qt::RightToLeft</enum>
               </property>
@@ -564,7 +570,7 @@
            <property name="widgetResizable">
             <bool>true</bool>
            </property>
-           <widget class="QWidget" name="character_scroll_layout">
+           <widget class="QWidget" name="widget">
             <property name="geometry">
              <rect>
               <x>0</x>
@@ -573,6 +579,7 @@
               <height>931</height>
              </rect>
             </property>
+            <layout class="QVBoxLayout" name="character_scroll_layout"/>
            </widget>
           </widget>
          </item>

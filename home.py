@@ -1,18 +1,12 @@
 # standard libraries
 from datetime import datetime
-from functools import partial
 import json
 from os import listdir
 from os.path import isdir
-from os.path import relpath
-from shutil import rmtree
-import random
 
 # dependencies
 from PyQt5.QtWidgets import QFileDialog
 from PyQt5.QtWidgets import QMainWindow
-from PyQt5.QtWidgets import QMenu
-from PyQt5.QtWidgets import QMessageBox
 
 # local modules
 import constants as const
@@ -20,9 +14,7 @@ import database
 from bookshelf_panel import BookshelfPanel
 from details_panel import DetailsPanel
 from metadata_panel import MetadataPanel
-import reader
 from search_panel import SearchPanel
-import spines
 from ui.main_window import Ui_MainWindow
 
 
