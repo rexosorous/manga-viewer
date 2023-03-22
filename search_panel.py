@@ -12,6 +12,25 @@ from ui.search_frame import Ui_search_panel
 
 
 
+class SearchFilters:
+    def __init__(self, and_list: list[int] = [], not_list: list[int] = [], or_list: list[int] = []):
+        self.data = {
+            const.Filters.AND: and_list,
+            const.Filters.NOT: not_list,
+            const.Filters.OR: or_list
+        }
+
+    def add(self, filter_type: const.Filters, value: int):
+        self.data[filter_type].append(value)
+
+    def has(self, filter_type: const.Filters):
+        return bool(self.data[filter_type])
+
+    def get_query_list(self, filter_type: const.Filters):
+        return '(' + ','.join(map(str, self.data[filter_type])) + ')'
+
+
+
 class SearchPanel(QFrame, Ui_search_panel):
     """Advanced Search
 
@@ -316,54 +335,32 @@ class SearchPanel(QFrame, Ui_search_panel):
     def submit(self):
         """Stores all the form information into a dict and then emits a signal to apply the search filters
         """
-        filters = {
-            const.Filters.AND: {
-                'title': self.title_text.text(),
-                'rating': (self.rating_number.value(), self.rating_toggle.checkState()),
-                'pages_low': self.pages_number_low.value(),
-                'pages_high': self.pages_number_high.value(),
-                'date_low': self.date_low.dateTime().toPyDateTime(),
-                'date_high':self.date_high.dateTime().toPyDateTime(),
-                'artists': [],
-                'series': [],
-                'genres': [],
-                'tags': []
-            },
-            const.Filters.NOT: {
-                'artists': [],
-                'series': [],
-                'genres': [],
-                'tags': []
-            },
-            const.Filters.OR: {
-                'artists': [],
-                'series': [],
-                'genres': [],
-                'tags': []
-            }
-        }
-
-
         list_picker = {
             self.artists_list: 'artists',
-            self.series_list: 'series',
             self.genres_list: 'genres',
             self.tags_list: 'tags'
         }
 
+        filters = {}
         for list_ in list_picker.keys():
             if not list_.isEnabled():
-                filters[const.Filters.AND][list_picker[list_]] = None
                 continue
+            data = {
+                const.Filters.AND: [],
+                const.Filters.NOT: [],
+                const.Filters.OR: []
+            }
             for i in range(list_.count()):
                 item = list_.item(i)
                 if item.filter_type == 0:
                     continue
-                filters[item.filter_type][list_picker[list_]].append(item.id_)
+                data[item.filter_type].append(item.id_)
+            filters[list_picker[list_]] = SearchFilters(data[const.Filters.AND], data[const.Filters.NOT], data[const.Filters.OR])
+                # filters[item.filter_type][list_picker[list_]].append(item.id_)
 
-        filters[const.Filters.AND]['characters'] = [[1, 2, 3], [4]]
-        filters[const.Filters.NOT]['characters'] = [[1, 2, 3], [4]]
-        filters[const.Filters.OR]['characters'] = [[1, 2, 3], [4]]
+        # filters[const.Filters.AND]['characters'] = [[1, 2, 3], [4]]
+        # filters[const.Filters.NOT]['characters'] = [[1, 2, 3], [4]]
+        # filters[const.Filters.OR]['characters'] = [[1, 2, 3], [4]]
 
         self.signals.search_advanced.emit(filters)
         self.signals.show_bookshelf_panel.emit()

@@ -1,4 +1,5 @@
 # standard libraries
+from string import Template
 import sqlite3
 
 # dependencies
@@ -6,7 +7,6 @@ from PyQt5.QtWidgets import QListWidgetItem
 
 # local modules
 import constants as const
-from datetime import datetime
 import exceptions
 
 
@@ -225,7 +225,7 @@ class DBHandler:
 
 
 
-    def get_books(self, filters, sort_by):
+    def get_books(self, filters, sort_by = const.Sort.ALPHA_ASC):
         """Gets a list of books that satisfy the search filters
 
         Dynamically builds a sqlite3 query string based on the information provided by filters
@@ -253,105 +253,101 @@ class DBHandler:
             self.db.execute('SELECT * FROM books ORDER BY ' + sort_query[sort_by])
             return self.db.fetchall()
 
-        # shorthanding the filter keys
-        and_data = filters[const.Filters.AND]
-        not_data = filters[const.Filters.NOT]
-        or_data = filters[const.Filters.OR]
+        # TODO: basic filtering
 
-        and_block = []
-        not_block = []
-        or_block = []
-        count_block = []
-        character_block = ''
+        with open('queries/subquery.sql', 'r') as file:
+            subquery = file.read()
 
-        # AND SIMPLE
-        and_block.append(f'(books.name LIKE "%{and_data["title"]}%" OR books.alt_name LIKE "%{and_data["title"]}%")') if and_data['title'] else None
-        and_block.append(f'books.rating={and_data["rating"][0]}') if and_data['rating'][0] >= 0 and and_data['rating'][1] == 0 else None
-        and_block.append(f'books.rating>={and_data["rating"][0]}') if and_data['rating'][0] >= 0 and and_data['rating'][1] == 2 else None
-        and_block.append(f'books.rating IS NULL') if and_data['rating'][0] < 0 and and_data['rating'][1] == 0 else None
-        and_block.append(f'books.pages>={and_data["pages_low"]}') if and_data['pages_low'] else None
-        and_block.append(f'books.pages<={and_data["pages_high"]}') if and_data['pages_high'] else None
-        and_block.append(f'books.date_added>="{and_data["date_low"]}"') if and_data['date_low'] > datetime(1900, 1, 1, 0, 0, 0, 0) else None
-        and_block.append(f'books.date_added<="{and_data["date_high"]}"') if and_data['date_high'] > datetime(1900, 1, 1, 0, 0, 0, 0) else None
+        prev_results = None
+        for field in ['artists', 'genres', 'tags']:
+            if field in filters:
+                query_vars = {
+                    'linking_table': f'books_{field}',
+                    'field': f'{field[:-1]}ID',
+                    'null_search': False,
+                    'has_and': filters[field].has(const.Filters.AND),
+                    'and_list': filters[field].get_query_list(const.Filters.AND),
+                    'and_list_length': len(filters[field].data[const.Filters.AND]),
+                    'has_or': filters[field].has(const.Filters.OR),
+                    'or_list': filters[field].get_query_list(const.Filters.OR),
+                    'has_not': filters[field].has(const.Filters.NOT),
+                    'not_list': filters[field].get_query_list(const.Filters.NOT),
+                    'has_prev_results': prev_results != None,
+                    'prev_results_list': f'({",".join(map(str, prev_results))})' if prev_results != None else '()'
+                }
+            else: # null search
+                query_vars = {
+                    'linking_table': f'books_{field}',
+                    'field': f'{field[:-1]}ID',
+                    'null_search': True,
+                    'has_and': False,
+                    'and_list_length': 0,
+                    'and_list': (),
+                    'has_or': False,
+                    'or_list': (),
+                    'has_not': False,
+                    'not_list': (),
+                    'has_prev_results': prev_results != None,
+                    'prev_results_list': f'({",".join(map(str, prev_results))})' if prev_results != None else ()
+                }
 
-        # AND COMPLEX
-        if and_data['artists'] == None: # different from being empty
-            and_block.append('artistID IS NULL')
-        elif and_data['artists']:
-            and_block.append('(' + '\n\tOR '.join([f'artistID={id_}' for id_ in and_data['artists']]) + ')')
+            query = Template(subquery).safe_substitute(query_vars)
+            print(f'\n\n\n############ {field} ############')
+            print(query)
+            self.db.execute(query)
+            results = self.db.fetchall()
+            prev_results = [x['id'] for x in results]
+            if len(prev_results) == 0:
+                break
 
-        if and_data['series'] == None: # different from being empty
-            and_block.append('series IS NULL')
-        elif and_data['series']:
-            and_block.append('(' + '\n\tOR '.join([f'books.series={id_}' for id_ in and_data['series']]) + ')')
+        # characters are special because of the way they have to link the tables
+        with open('queries/characters_subquery.sql', 'r') as file:
+            characters_subquery = file.read()
 
-        if and_data['genres'] == None: # different from being empty
-            and_block.append('genreID IS NULL')
-        elif and_data['genres']:
-            and_block.append('(' + '\n\tOR '.join([f'genreID={id_}' for id_ in and_data['genres']]) + ')')
+        if 'characters' in filters:
+            for character in filters['characters']:
+                query_vars = {
+                    'null_search': False,
+                    'has_and': character.has(const.Filters.AND),
+                    'and_list': character.get_query_list(const.Filters.AND),
+                    'and_list_length': len(character.data[const.Filters.AND]),
+                    'has_or': character.has(const.Filters.OR),
+                    'or_list': character.get_query_list(const.Filters.OR),
+                    'has_not': character.has(const.Filters.NOT),
+                    'not_list': character.get_query_list(const.Filters.NOT),
+                    'has_prev_results': prev_results != None,
+                    'prev_results_list': f'({",".join(map(str, prev_results))})' if prev_results != None else ()
+                }
 
-        if and_data['tags'] == None: # different from being empty
-            and_block.append('tagID IS NULL')
-        elif and_data['tags']:
-            and_block.append('(' + '\n\tOR '.join([f'tagID={id_}' for id_ in and_data['tags']]) + ')')
+                query = Template(characters_subquery).safe_substitute(query_vars)
+                print(f'\n\n\n############ characters ############')
+                print(query)
+                self.db.execute(query)
+                results = self.db.fetchall()
+                prev_results = [x['id'] for x in results]
+        else:
+            query_vars = {
+                'null_search': True,
+                'has_and': False,
+                'and_list': (),
+                'and_list_length': 0,
+                'has_or': False,
+                'or_list': (),
+                'has_not': False,
+                'not_list': (),
+                'has_prev_results': prev_results != None,
+                'prev_results_list': f'({",".join(map(str, prev_results))})' if prev_results != None else ()
+            }
 
-        if and_data['characters'] == None:
-            # and_block.append('') TODO
-            pass
-        elif and_data['characters']:
-            character_block += '\n\tbooks.id IN ' +  '\n\tAND books.id IN '.join([f'\n\t\t(SELECT DISTINCT bookId\n\t\tFROM characters_traits LEFT JOIN characters ON characters.id = characterID\n\t\tWHERE traitID = {" OR traitID = ".join([str(trait_id) for trait_id in character])}\n\t\tGROUP BY characterID\n\t\tHAVING COUNT(characterID) = {len(character)})' for character in and_data['characters']])
-
-        # NOT
-        not_block += [f'artistID={id_}' for id_ in not_data['artists']]
-        not_block += [f'books.series={id_}' for id_ in not_data['series']]
-        not_block += [f'genreID={id_}' for id_ in not_data['genres']]
-        not_block += [f'tagID={id_}' for id_ in not_data['tags']]
-        character_block += '\n\tAND books.id NOT IN ' if character_block else '\n\tbooks.id NOT IN '
-        character_block += '\n\tAND books.id NOT IN '.join([f'\n\t\t(SELECT DISTINCT bookId\n\t\tFROM characters_traits LEFT JOIN characters ON characters.id = characterID\n\t\tWHERE traitID = {" OR traitID = ".join([str(trait_id) for trait_id in character])}\n\t\tGROUP BY characterID\n\t\tHAVING COUNT(characterID) = {len(character)})' for character in and_data['characters']])
-
-        # OR
-        or_block += [f'artistID={id_}' for id_ in or_data['artists']]
-        or_block += [f'books.series={id_}' for id_ in or_data['series']]
-        or_block += [f'genreID={id_}' for id_ in or_data['genres']]
-        or_block += [f'tagID={id_}' for id_ in or_data['tags']]
-        character_block += '\n\tOR books.id IN ' if character_block else '\n\tbooks.id IN '
-        character_block += '\n\tOR books.id IN '.join([f'\n\t\t(SELECT DISTINCT bookId\n\t\tFROM characters_traits LEFT JOIN characters ON characters.id = characterID\n\t\tWHERE traitID = {" OR traitID = ".join([str(trait_id) for trait_id in character])}\n\t\tGROUP BY characterID\n\t\tHAVING COUNT(characterID) = {len(character)})' for character in and_data['characters']])
-
-        # count
-        count_block.append(f'COUNT(DISTINCT artistID)={len(and_data["artists"])}') if and_data['artists'] and len(and_data['artists']) > 1 else None
-        count_block.append(f'COUNT(DISTINCT books.series)={len(and_data["series"])}') if and_data['series'] and len(and_data['series']) > 1 else None
-        count_block.append(f'COUNT(DISTINCT genreID)={len(and_data["genres"])}') if and_data['genres'] and len(and_data['genres']) > 1 else None
-        count_block.append(f'COUNT(DISTINCT tagID)={len(and_data["tags"])}') if and_data['tags'] and len(and_data['tags']) > 1 else None
-
-
-        # check if there are even any search filters
-        if not and_block and not not_block and not or_block:
-            self.db.execute('SELECT * FROM books ORDER BY ' + sort_query[sort_by])
-            return self.db.fetchall()
+            query = Template(characters_subquery).safe_substitute(query_vars)
+            print(f'\n\n\n############ characters ############')
+            print(query)
+            self.db.execute(query)
+            results = self.db.fetchall()
+            prev_results = [x['id'] for x in results]
 
 
-        # start building the query string
-        base_query = ('SELECT DISTINCT books.* FROM books\n'
-        '\tLEFT JOIN books_artists ON books_artists.bookID=books.id\n'
-        '\tLEFT JOIN books_genres ON books_genres.bookID=books.id\n'
-        '\tLEFT JOIN books_tags ON books_tags.bookID=books.id')
-
-        and_string = '\nWHERE\n\t' + '\n\tAND '.join(and_block) if and_block else ''
-        count_string = '\nGROUP BY books.id\nHAVING\n\t' + '\n\tAND '.join(count_block) if count_block else ''
-        not_string = '\nEXCEPT\n\t' + base_query.replace('\n', '\n\t') + '\n\tWHERE\n\t\t' + '\n\t\tOR '.join(not_block) if not_block else ''
-        or_string = '\n\tOR '.join(or_block)
-
-        character_block = '\nWHERE' + character_block if not and_string else '\n\tAND ' + character_block
-        query = base_query + and_string + character_block + count_string + not_string
-        query = ('SELECT DISTINCT books.* FROM books\n'
-        '\tINNER JOIN\n\t\t(' + query.replace("\n", "\n\t\t") + ') AS temp ON temp.id=books.id\n'
-        '\tLEFT JOIN books_artists ON books_artists.bookID=books.id\n'
-        '\tLEFT JOIN books_genres ON books_genres.bookID=books.id\n'
-        '\tLEFT JOIN books_tags ON books_tags.bookID=books.id\n'
-        'WHERE\n\t' + or_string) if or_block else query
-        query = query + '\nORDER BY ' + sort_query[sort_by]
-
-        self.db.execute(query)
+        self.db.execute(f'SELECT * FROM books WHERE id IN ({",".join(map(str, prev_results))}) ORDER BY {sort_query[sort_by]}')
         return self.db.fetchall()
 
 
@@ -490,17 +486,6 @@ class DBHandler:
 
 
 
-    def add_character(self, book_id: int, traits: list[int]) -> int:
-        pass
-
-
-
-    def remove_character(self, character_id: int):
-        # also needs to delete characters properly, delete from characters where bookID is null
-        pass
-
-
-
     def add_book(self, name, directory, alt_name='NULL', series='NULL', series_order='NULL', pages='NULL', rating='NULL', notes='NULL', zoom=1, bookmark=0):
         """Creates a new book entry
         """
@@ -561,7 +546,7 @@ class DBHandler:
         self.db.execute(f'DELETE FROM books_genres WHERE bookID={id_}')
         self.db.execute(f'DELETE FROM books_tags WHERE bookID={id_}')
         self.db.execute(f'DELETE FROM characters_traits WHERE characterID IN (SELECT id FROM characters WHERE bookID={id_})')
-        self.db.execute(f'DELETE FROM charaters WHERE bookID={id_}')
+        self.db.execute(f'DELETE FROM characters WHERE bookID={id_}')
         self.conn.commit()
 
 
