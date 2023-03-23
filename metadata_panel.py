@@ -56,6 +56,12 @@ class MetadataPanel(QFrame, Ui_metadata_panel):
         self.tags_submit.clicked.connect(partial(self.create_metadata, self.tags_text))
         self.traits_submit.clicked.connect(partial(self.create_metadata, self.traits_text))
 
+        # typing in the search bars
+        self.artists_text.textChanged.connect(partial(self.search_list, self.artists_list))
+        self.genres_text.textChanged.connect(partial(self.search_list, self.genres_list))
+        self.tags_text.textChanged.connect(partial(self.search_list, self.tags_list))
+        self.traits_text.textChanged.connect(partial(self.search_list, self.traits_list))
+
         # pressing enter in line edits (has the same functionality as the submit button)
         self.artists_text.returnPressed.connect(partial(self.create_metadata, self.artists_text))
         self.series_text.returnPressed.connect(partial(self.create_metadata, self.series_text))
@@ -100,6 +106,23 @@ class MetadataPanel(QFrame, Ui_metadata_panel):
         self.genres_list.clear()
         self.tags_list.clear()
         self.traits_list.clear()
+
+
+
+    def search_list(self, list_widget, search_term):
+        """Hides and reveals items in the list widget based on the text being typed in the corresponding line edit
+
+        Args:
+            list_widget (QListWidget)
+            search_term (str)
+        """
+        search_term = search_term.lower()
+        for i in range(list_widget.count()):
+            item = list_widget.item(i)
+            if search_term in item.text().lower():
+                item.setHidden(False)
+            else:
+                item.setHidden(True)
 
 
 

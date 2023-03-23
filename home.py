@@ -1,5 +1,6 @@
 # standard libraries
 from datetime import datetime
+from datetime import timedelta
 import json
 from os import listdir
 from os.path import isdir
@@ -158,7 +159,7 @@ class Home(QMainWindow, Ui_MainWindow):
         # filter gallery to show only the the new books (using date filtering)
         self.show_details_panel()
         self.search_panel.clear_fields()
-        self.search_panel.date_low.setDateTime(scan_time)
+        self.search_panel.date_low.setDateTime(scan_time - timedelta(minutes=1))
         self.search_panel.submit()
 
 
