@@ -337,6 +337,17 @@ class SearchPanel(QFrame, Ui_search_panel):
 
         copy.setBackground(colors[filter_type])
         copy.filter_type = filter_type
+
+        # don't add duplicate traits
+        # if trait is already in list, change filter type if necessary
+        for i in range(self.selected_character.count()):
+            trait = self.selected_character.item(i)
+            if copy == trait:
+                if copy.filter_type == trait.filter_type:
+                    return
+                else:
+                    self.selected_character.takeItem(i)
+                    break
         self.selected_character.addItem(copy)
 
         # take out all the items in the list and re-sort them in a custom order:

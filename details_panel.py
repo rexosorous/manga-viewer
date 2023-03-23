@@ -346,6 +346,9 @@ class DetailsPanel(QFrame, Ui_details_panel):
                     break
         else:
             copy = trait.clone()
+        for i in range(self.selected_character.count()):
+            if copy == self.selected_character.item(i):
+                return # don't add duplicate traits to this character
         self.selected_character.addItem(copy)
 
 
