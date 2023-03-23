@@ -155,6 +155,9 @@ class DetailsPanel(QFrame, Ui_details_panel):
         self.signals.update_metadata.connect(self.update_metadata)
         self.signals.details_character_select.connect(self.select_character)
 
+        # context menu
+        self.contextMenuEvent = self.context_menu
+
 
 
     def clear_fields(self):
@@ -436,3 +439,16 @@ class DetailsPanel(QFrame, Ui_details_panel):
 
 
 
+    def context_menu(self, event):
+        """Opens a context menu for the dates because properly setting / resetting them can be annoying
+
+        "Reset Book Details": resets data back to DB values
+
+        Args:
+            event (QMouseEvent): The event that was emitted. Unused, but required by PyQt5
+        """
+        menu = QMenu()
+        reset = menu.addAction('Reset Book Details')
+        if (selection := menu.exec_(event.globalPos())):
+            if selection == reset:
+                self.update_metadata()
