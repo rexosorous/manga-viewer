@@ -1,4 +1,5 @@
 # standard libraries
+from datetime import datetime
 from string import Template
 import sqlite3
 
@@ -225,7 +226,7 @@ class DBHandler:
 
 
 
-    def get_books(self, filters, sort_by = const.Sort.ALPHA_ASC):
+    def get_books(self, filters=None, sort_by = const.Sort.ALPHA_ASC):
         """Gets a list of books that satisfy the search filters
 
         Dynamically builds a sqlite3 query string based on the information provided by filters
@@ -249,16 +250,41 @@ class DBHandler:
             const.Sort.RANDOM: 'random()'
         }
 
-        if not filters: # if filters are not sent (like during startup), just give a list of all the books back
+        if filters == None: # if filters are not sent (like during startup), just give a list of all the books back
             self.db.execute('SELECT * FROM books ORDER BY ' + sort_query[sort_by])
             return self.db.fetchall()
 
-        # TODO: basic filtering
+        # basic fields
+        basic_subquery = 'SELECT id FROM books'
+        where_clauses = []
+        if title := filters['basic']['title']:
+            where_clauses.append(f"(name LIKE '%{title}%' OR alt_name LIKE '%{title}%')")
+        if (rating := filters['basic']['rating'][0]) >= 0:
+            operator = '>=' if filters['basic']['rating'][1] else '='
+            where_clauses.append(f'rating {operator} {rating}')
+        if filters['basic']['rating'][0] < 0 and filters['basic']['rating'][1] == 0:
+            where_clauses.append(f'rating IS NULL')
+        if pages_low := filters['basic']['pages_low']:
+            where_clauses.append(f'pages >= {pages_low}')
+        if pages_high := filters['basic']['pages_high']:
+            where_clauses.append(f'pages <= {pages_high}')
+        if (date_low := filters['basic']['date_low']) > datetime(1900, 1, 1, 0, 0, 0, 0):
+            where_clauses.append(f"date_added >= '{date_low}'")
+        if (date_high := filters['basic']['date_high']) > datetime(1900, 1, 1, 0, 0, 0, 0):
+            where_clauses.append(f"date_added <= '{date_high}'")
+        # combine where clauses and add it to query
+        where_statement = '\n\tAND '.join(where_clauses)
+        if where_statement:
+            basic_subquery += '\nWHERE ' + where_statement
 
-        with open('queries/subquery.sql', 'r') as file:
-            subquery = file.read()
+        self.db.execute(basic_subquery)
+        results = self.db.fetchall()
+        prev_results = [x['id'] for x in results]
 
-        prev_results = None
+        # all many to many fields except for characters (artists, genres, and tags)
+        with open('queries/mtm_fields_subquery.sql', 'r') as file:
+            mtm_fields_subquery = file.read()
+
         for field in ['artists', 'genres', 'tags']:
             if field in filters:
                 query_vars = {
@@ -291,9 +317,7 @@ class DBHandler:
                     'prev_results_list': f'({",".join(map(str, prev_results))})' if prev_results != None else ()
                 }
 
-            query = Template(subquery).safe_substitute(query_vars)
-            print(f'\n\n\n############ {field} ############')
-            print(query)
+            query = Template(mtm_fields_subquery).safe_substitute(query_vars)
             self.db.execute(query)
             results = self.db.fetchall()
             prev_results = [x['id'] for x in results]
@@ -320,8 +344,6 @@ class DBHandler:
                 }
 
                 query = Template(characters_subquery).safe_substitute(query_vars)
-                print(f'\n\n\n############ characters ############')
-                print(query)
                 self.db.execute(query)
                 results = self.db.fetchall()
                 prev_results = [x['id'] for x in results]
@@ -340,8 +362,6 @@ class DBHandler:
             }
 
             query = Template(characters_subquery).safe_substitute(query_vars)
-            print(f'\n\n\n############ characters ############')
-            print(query)
             self.db.execute(query)
             results = self.db.fetchall()
             prev_results = [x['id'] for x in results]

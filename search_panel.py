@@ -3,11 +3,14 @@ from datetime import datetime
 from functools import partial
 
 # dependencies
+from PyQt5.QtWidgets import QBoxLayout
 from PyQt5.QtWidgets import QFrame
+from PyQt5.QtWidgets import QListWidget
 from PyQt5.QtWidgets import QMenu
 
 # local modules
 import constants as const
+from details_panel import CharacterCard
 from ui.search_frame import Ui_search_panel
 
 
@@ -41,8 +44,6 @@ class SearchPanel(QFrame, Ui_search_panel):
         title_text (QLineEdit)
         artists_text (QLineEdit)
         artists_list (QListWidget)
-        series_text (QLineEdit)
-        series_list (QListWidget)
         rating_number (QSpinBox)
         rating_toggle (QCheckBox)
         pages_number_low (QComboBox)
@@ -61,7 +62,10 @@ class SearchPanel(QFrame, Ui_search_panel):
         self.db = db
         self.signals = signals
         self.filter_type = const.Filters.AND
+        self.selected_character = None
         self.setupUi(self)
+        self.character_scroll_layout.setDirection(QBoxLayout.BottomToTop)
+        self.character_scroll_layout.addStretch()
         self.connect_events()
         self.populate_metadata()
 
@@ -70,29 +74,30 @@ class SearchPanel(QFrame, Ui_search_panel):
     def connect_events(self):
         # typing in the search bars
         self.artists_text.textChanged.connect(partial(self.search_list, self.artists_list))
-        self.series_text.textChanged.connect(partial(self.search_list, self.series_list))
         self.genres_text.textChanged.connect(partial(self.search_list, self.genres_list))
         self.tags_text.textChanged.connect(partial(self.search_list, self.tags_list))
+        self.traits_text.textChanged.connect(partial(self.search_list, self.traits_list))
 
         # hitting enter in the sarch bars
         self.artists_text.returnPressed.connect(partial(self.add_filter_text, self.artists_text, self.artists_list))
-        self.series_text.returnPressed.connect(partial(self.add_filter_text, self.series_text, self.series_list))
         self.genres_text.returnPressed.connect(partial(self.add_filter_text, self.genres_text, self.genres_list))
         self.tags_text.returnPressed.connect(partial(self.add_filter_text, self.tags_text, self.tags_list))
+        self.traits_text.returnPressed.connect(partial(self.add_trait_to_character, self.traits_list))
 
         # double clicking a list item
         self.artists_list.itemDoubleClicked.connect(partial(self.add_filter, self.artists_list))
-        self.series_list.itemDoubleClicked.connect(partial(self.add_filter, self.series_list))
         self.genres_list.itemDoubleClicked.connect(partial(self.add_filter, self.genres_list))
         self.tags_list.itemDoubleClicked.connect(partial(self.add_filter, self.tags_list))
+        self.traits_list.itemDoubleClicked.connect(self.add_trait_to_character)
 
         # buttons
         self.filter_prev_button.clicked.connect(partial(self.change_filter, -1))
         self.filter_next_button.clicked.connect(partial(self.change_filter, 1))
         self.no_artists_button.clicked.connect(self.toggle_no_artists)
-        self.no_series_button.clicked.connect(self.toggle_no_series)
         self.no_genres_button.clicked.connect(self.toggle_no_genres)
         self.no_tags_button.clicked.connect(self.toggle_no_tags)
+        self.add_character_button.clicked.connect(self.add_character)
+        self.no_characters_button.clicked.connect(self.toggle_no_characters)
         self.submit_button.clicked.connect(self.submit)
         self.clear_button.clicked.connect(self.populate_metadata)
 
@@ -104,6 +109,7 @@ class SearchPanel(QFrame, Ui_search_panel):
         self.signals.update_metadata.connect(self.populate_metadata)
         self.signals.clear_filter.connect(self.populate_metadata)
         self.signals.clear_filter.connect(self.submit)
+        self.signals.search_character_select.connect(self.select_character)
 
 
 
@@ -113,8 +119,6 @@ class SearchPanel(QFrame, Ui_search_panel):
 
         for item in metadata['artists']:
             self.artists_list.addItem(item)
-        for item in metadata['series']:
-            self.series_list.addItem(item)
         for item in metadata['genres']:
             self.genres_list.addItem(item)
         for item in metadata['tags']:
@@ -131,11 +135,6 @@ class SearchPanel(QFrame, Ui_search_panel):
         self.artists_text.setEnabled(True)
         self.artists_list.clear()
         self.artists_list.setEnabled(True)
-        self.no_series_button.setText('No Series')
-        self.series_text.clear()
-        self.series_text.setEnabled(True)
-        self.series_list.clear()
-        self.series_list.setEnabled(True)
         self.rating_number.setValue(-1)
         self.rating_toggle.setCheckState(2)
         self.pages_number_low.setValue(0)
@@ -152,6 +151,14 @@ class SearchPanel(QFrame, Ui_search_panel):
         self.tags_text.setEnabled(True)
         self.tags_list.clear()
         self.tags_list.setEnabled(True)
+        self.add_character_button.setEnabled(True)
+        self.character_scroll_area.setEnabled(True)
+        self.character_scroll_layout.setEnabled(True)
+        for index in reversed(range(self.character_scroll_layout.count())):
+            item = self.character_scroll_layout.itemAt(index).widget()
+            if item != None:
+                item.setParent(None)
+        self.no_characters_button.setText('No Characters')
         self.traits_text.clear()
         self.traits_list.clear()
 
@@ -284,6 +291,75 @@ class SearchPanel(QFrame, Ui_search_panel):
 
 
 
+    def add_trait_to_character_text(self, text_widget, list_widget):
+        filter_type = None
+        prefix = text_widget.text()[0]
+        if prefix in '+&':
+            filter_type = const.Filters.AND
+        elif prefix in '-!':
+            filter_type = const.Filters.NOT
+        elif prefix in '/|':
+            filter_type = const.Filters.OR
+        elif prefix in '$':
+            filter_type = const.Filters.NONE
+
+        for i in range(list_widget.count()):
+            item = list_widget.item(i)
+            if not item.isHidden():
+                self.add_trait_to_character(item, filter_type)
+                break
+
+        text_widget.clear()
+
+
+
+    def add_trait_to_character(self, trait, filter_type = None):
+        # clone the trait item
+        if self.selected_character == None:
+            return
+        if type(trait) == QListWidget:
+            for i in range(trait.count()):
+                if not trait.item(i).isHidden():
+                    copy = trait.item(i).clone()
+                    break
+        else:
+            copy = trait.clone()
+
+        # apply filter to cloned item
+        colors = {
+            const.Filters.AND: const.Colors.AND,
+            const.Filters.NOT: const.Colors.NOT,
+            const.Filters.OR: const.Colors.OR
+        }
+
+        if filter_type is None:
+            filter_type = self.filter_type
+
+        copy.setBackground(colors[filter_type])
+        copy.filter_type = filter_type
+        self.selected_character.addItem(copy)
+
+        # take out all the items in the list and re-sort them in a custom order:
+        #       AND filters  ->  NOT filters  ->  OR filters
+        #       then sort alphabetically in those groups
+        sorting_hat = {
+            const.Filters.OR: [],
+            const.Filters.NOT: [],
+            const.Filters.AND: []
+        }
+        while len(self.selected_character): # remove each item and sort them into their appropriate groups
+            temp = self.selected_character.takeItem(0)
+            sorting_hat[temp.filter_type].append(temp)
+
+        for key in sorting_hat:
+            # re-add each item in the correct order
+            # we add everything in backwards because it's easier to insert each item at pos 0 rather than find out what the last pos is
+            sorting_hat[key].sort(key=lambda x: x.text(), reverse=True)
+            for element in sorting_hat[key]:
+                self.selected_character.insertItem(0, element)
+
+
+
     def toggle_no_artists(self):
         if self.artists_text.isEnabled():
             self.artists_text.setEnabled(False)
@@ -293,18 +369,6 @@ class SearchPanel(QFrame, Ui_search_panel):
             self.artists_text.setEnabled(True)
             self.artists_list.setEnabled(True)
             self.no_artists_button.setText('No Artists')
-
-
-
-    def toggle_no_series(self):
-        if self.series_text.isEnabled():
-            self.series_text.setEnabled(False)
-            self.series_list.setEnabled(False)
-            self.no_series_button.setText('Search Series')
-        else:
-            self.series_text.setEnabled(True)
-            self.series_list.setEnabled(True)
-            self.no_series_button.setText('No Series')
 
 
 
@@ -332,6 +396,35 @@ class SearchPanel(QFrame, Ui_search_panel):
 
 
 
+    def toggle_no_characters(self):
+        if self.add_character_button.isEnabled():
+            self.add_character_button.setEnabled(False)
+            self.character_scroll_area.setEnabled(False)
+            self.character_scroll_layout.setEnabled(False)
+            self.no_characters_button.setText('Search Characters')
+        else:
+            self.add_character_button.setEnabled(True)
+            self.character_scroll_area.setEnabled(True)
+            self.character_scroll_layout.setEnabled(True)
+            self.no_characters_button.setText('No Characters')
+
+
+
+    def select_character(self, source: CharacterCard):
+        if self.selected_character != None:
+            self.selected_character.deselect()
+        source.select()
+        self.selected_character = source
+
+
+
+    def add_character(self):
+        character = CharacterCard(self.signals.search_character_select)
+        self.character_scroll_layout.addWidget(character)
+        self.select_character(character)
+
+
+
     def submit(self):
         """Stores all the form information into a dict and then emits a signal to apply the search filters
         """
@@ -341,7 +434,17 @@ class SearchPanel(QFrame, Ui_search_panel):
             self.tags_list: 'tags'
         }
 
-        filters = {}
+        filters = {
+            'basic': {
+                'title': self.title_text.text(),
+                'rating': (self.rating_number.value(), self.rating_toggle.checkState()),
+                'pages_low': self.pages_number_low.value(),
+                'pages_high': self.pages_number_high.value(),
+                'date_low': self.date_low.dateTime().toPyDateTime(),
+                'date_high':self.date_high.dateTime().toPyDateTime(),
+            }
+        }
+
         for list_ in list_picker.keys():
             if not list_.isEnabled():
                 continue
@@ -356,11 +459,25 @@ class SearchPanel(QFrame, Ui_search_panel):
                     continue
                 data[item.filter_type].append(item.id_)
             filters[list_picker[list_]] = SearchFilters(data[const.Filters.AND], data[const.Filters.NOT], data[const.Filters.OR])
-                # filters[item.filter_type][list_picker[list_]].append(item.id_)
 
-        # filters[const.Filters.AND]['characters'] = [[1, 2, 3], [4]]
-        # filters[const.Filters.NOT]['characters'] = [[1, 2, 3], [4]]
-        # filters[const.Filters.OR]['characters'] = [[1, 2, 3], [4]]
+        # characters are special and need different logic than the other fields
+        if self.add_character_button.isEnabled():
+            filters['characters'] = []
+            for index in range(self.character_scroll_layout.count()):
+                character = self.character_scroll_layout.itemAt(index).widget()
+                if character == None:
+                    continue
+                data = {
+                    const.Filters.AND: [],
+                    const.Filters.NOT: [],
+                    const.Filters.OR: []
+                }
+                for index in range(character.count()):
+                    trait = character.item(index)
+                    if trait.filter_type == 0:
+                        continue
+                    data[trait.filter_type].append(trait.id_)
+                filters['characters'].append(SearchFilters(data[const.Filters.AND], data[const.Filters.NOT], data[const.Filters.OR]))
 
         self.signals.search_advanced.emit(filters)
         self.signals.show_bookshelf_panel.emit()

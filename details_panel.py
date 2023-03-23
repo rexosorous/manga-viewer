@@ -27,12 +27,13 @@ TODO:
 
 
 class CharacterCard(QListWidget):
-    def __init__(self, signals):
-        self.signals = signals
+    def __init__(self, select_signal):
+        # select_signal is either details_character_select or search_character_select
+        self.select_signal = select_signal
         super().__init__()
         self.setFixedHeight(200)
         self.setAutoFillBackground(True)
-        self.setSortingEnabled(True)
+        # self.setSortingEnabled(True)
         self.itemDoubleClicked.connect(self.remove_item)
 
     def select(self):
@@ -47,7 +48,7 @@ class CharacterCard(QListWidget):
         self.takeItem(self.currentRow())
 
     def mousePressEvent(self, e) -> None:
-        self.signals.test.emit(self)
+        self.select_signal.emit(self)
         return super().mousePressEvent(e)
 
     def mouseDoubleClickEvent(self, e) -> None:
@@ -152,7 +153,7 @@ class DetailsPanel(QFrame, Ui_details_panel):
         self.signals.populate_details.connect(self.populate_book_info)
         self.signals.depopulate_details.connect(self.cleanse_details)
         self.signals.update_metadata.connect(self.update_metadata)
-        self.signals.test.connect(self.select_character)
+        self.signals.details_character_select.connect(self.select_character)
 
 
 
@@ -314,7 +315,8 @@ class DetailsPanel(QFrame, Ui_details_panel):
 
 
     def add_character(self) -> CharacterCard:
-        character = CharacterCard(self.signals)
+        character = CharacterCard(self.signals.details_character_select)
+        character.setSortingEnabled(True)
         self.character_scroll_layout.addWidget(character)
         self.select_character(character)
         return character

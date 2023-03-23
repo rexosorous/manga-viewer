@@ -1,4 +1,4 @@
-SELECT DISTINCT books.id FROM books
+SELECT DISTINCT books.id, characters.id AS character_id FROM books
 LEFT JOIN characters ON books.id = bookID
 WHERE
     CASE WHEN $null_search THEN (
