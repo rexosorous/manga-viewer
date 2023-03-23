@@ -26,15 +26,17 @@ class ListItem(QListWidgetItem):
         id_ (int)
         table (str)
     """
-    def __init__(self, id_: int, name: str, table: str):
+    def __init__(self, id_: int, name: str, description: str, table: str):
         super().__init__()
         self.id_ = id_
         self.table = table
+        self.description = description
         self.filter_type = const.Filters.NONE
         self.setText(name)
+        self.setToolTip(self.description)
 
     def clone(self):
-        return ListItem(self.id_, self.text(), self.table)
+        return ListItem(self.id_, self.text(), self.description, self.table)
 
     def __eq__(self, compare):
         if self.id_ == compare.id_:
@@ -195,31 +197,31 @@ class DBHandler:
         self.db.execute('SELECT * FROM artists ORDER BY name COLLATE NOCASE')
         temp = self.db.fetchall()
         for entry in temp:
-            item = ListItem(entry['id'], entry['name'], 'artists')
+            item = ListItem(entry['id'], entry['name'], entry['alt_name'], 'artists')
             data['artists'].append(item)
 
         self.db.execute('SELECT * FROM series ORDER BY name COLLATE NOCASE')
         temp = self.db.fetchall()
         for entry in temp:
-            item = ListItem(entry['id'], entry['name'], 'series')
+            item = ListItem(entry['id'], entry['name'], entry['alt_name'], 'series')
             data['series'].append(item)
 
         self.db.execute('SELECT * FROM genres ORDER BY name COLLATE NOCASE')
         temp = self.db.fetchall()
         for entry in temp:
-            item = ListItem(entry['id'], entry['name'], 'genres')
+            item = ListItem(entry['id'], entry['name'], entry['description'], 'genres')
             data['genres'].append(item)
 
         self.db.execute('SELECT * FROM tags ORDER BY name COLLATE NOCASE')
         temp = self.db.fetchall()
         for entry in temp:
-            item = ListItem(entry['id'], entry['name'], 'tags')
+            item = ListItem(entry['id'], entry['name'], entry['description'], 'tags')
             data['tags'].append(item)
 
         self.db.execute('SELECT * FROM traits ORDER BY name COLLATE NOCASE')
         temp = self.db.fetchall()
         for entry in temp:
-            item = ListItem(entry['id'], entry['name'], 'traits')
+            item = ListItem(entry['id'], entry['name'], entry['description'], 'traits')
             data['traits'].append(item)
 
         return data
@@ -408,25 +410,25 @@ class DBHandler:
 
         self.db.execute('SELECT series.id, series.name FROM series INNER JOIN books ON series.id=books.series WHERE books.id=?', (book_id,))
         series = self.db.fetchone()
-        info['series'] = (ListItem(-1, '', 'series') if not series else ListItem(series['id'], series['name'], 'series'))
+        info['series'] = (ListItem(-1, '', '', 'series') if not series else ListItem(series['id'], series['name'], series['alt_name'], 'series'))
 
         self.db.execute('SELECT artists.id, artists.name FROM artists INNER JOIN books_artists ON artistID=artists.id INNER JOIN books ON bookID=books.id WHERE bookID=?', (book_id,))
         artists = self.db.fetchall()
         info['artists'] = []
         for a in artists:
-            info['artists'].append(ListItem(a['id'], a['name'], 'artists'))
+            info['artists'].append(ListItem(a['id'], a['name'], a['alt_name'], 'artists'))
 
         self.db.execute('SELECT genres.id, genres.name FROM genres INNER JOIN books_genres ON genreID=genres.id INNER JOIN books ON bookID=books.id WHERE bookID=?', (book_id,))
         genres = self.db.fetchall()
         info['genres'] = []
         for g in genres:
-            info['genres'].append(ListItem(g['id'], g['name'], 'genres'))
+            info['genres'].append(ListItem(g['id'], g['name'], g['description'], 'genres'))
 
         self.db.execute('SELECT tags.id, tags.name FROM tags INNER JOIN books_tags ON tagID=tags.id INNER JOIN books ON bookID=books.id WHERE bookID=?', (book_id,))
         tags = self.db.fetchall()
         info['tags'] = []
         for t in tags:
-            info['tags'].append(ListItem(t['id'], t['name'], 'tags'))
+            info['tags'].append(ListItem(t['id'], t['name'], t['description'], 'tags'))
 
         self.db.execute('SELECT characterID, traits.id, name FROM traits INNER JOIN characters_traits ON traits.id = traitID INNER JOIN characters ON characters.id = characterID WHERE bookID = ?', (book_id,))
         characters = self.db.fetchall()
@@ -434,7 +436,7 @@ class DBHandler:
         for c in characters:
             if c['characterID'] not in info['characters']:
                 info['characters'][c['characterID']] = []
-            info['characters'][c['characterID']].append(ListItem(c['id'], c['name'], 'traits'))
+            info['characters'][c['characterID']].append(ListItem(c['id'], c['name'], c['description'], 'traits'))
 
         return info
 
@@ -502,6 +504,20 @@ class DBHandler:
             new_name (str)
         """
         self.db.execute(f'UPDATE {table} SET name="{new_name}" WHERE id={id_}')
+        self.conn.commit()
+
+
+
+    def update_metadata_description(self, table: str, id_: int, description: str):
+        """Updates the secondary attribute of the metadata entry (usually alt_name or description)
+
+        Args:
+            table (str)
+            id_ (int)
+            description (str)
+        """
+        field = 'alt_name' if table in ['artists', 'series'] else 'description'
+        self.db.execute(f'UPDATE {table} SET {field} = "{description}" WHERE id = {id_}')
         self.conn.commit()
 
 

@@ -7,6 +7,7 @@ from PyQt5.QtWidgets import QInputDialog
 from PyQt5.QtWidgets import QLineEdit
 from PyQt5.QtWidgets import QMenu
 from PyQt5.QtWidgets import QMessageBox
+from PyQt5.QtWidgets import QTextEdit
 
 # local modules
 import exceptions
@@ -157,6 +158,7 @@ class MetadataPanel(QFrame, Ui_metadata_panel):
 
         "Clear Selected": clears the selected list items
         "Rename": renames the metadata entry
+        "Edit Description": allows for changing the secondary attribute of the table (either description or alt_name)
         "Delete": deletes the metadata entry after a confirmation message
 
         Args:
@@ -165,6 +167,7 @@ class MetadataPanel(QFrame, Ui_metadata_panel):
         menu = QMenu()
         clear = menu.addAction('Clear Selected')
         rename = menu.addAction('Rename')
+        edit_description = menu.addAction('Edit Description')
         delete = menu.addAction('Delete')
 
         if (selection := menu.exec_(event.globalPos())):
@@ -172,16 +175,37 @@ class MetadataPanel(QFrame, Ui_metadata_panel):
                 source.clearSelection()
             elif selection == rename:
                 if (selected := source.currentItem()): # only proceed if the user has selected something to rename
-                    new_name = ''
+                    new_description = ''
                     yes_button = True
-                    while yes_button and not new_name:
-                        new_name, yes_button = QInputDialog.getText(self, 'Rename', f'What would you "{selected.text()}" to be renamed to?', QLineEdit.Normal, '')
+                    while yes_button and not new_description:
+                        new_description, yes_button = QInputDialog.getText(self, 'Rename', f'What would you like "{selected.text()}" to be renamed to?', QLineEdit.Normal, '')
 
                         if not yes_button:
                             return
 
-                        elif yes_button and new_name:
-                            self.db.rename_metadata(selected.table, selected.id_, new_name)
+                        elif yes_button and new_description:
+                            self.db.rename_metadata(selected.table, selected.id_, new_description)
+                            self.signals.update_metadata.emit()
+                            return
+
+                        popup = QMessageBox()
+                        popup.setIcon(QMessageBox.Critical)
+                        popup.setWindowTitle('Error')
+                        popup.setText('Error\nNo new name specified.')
+                        popup.setStandardButtons(QMessageBox.Close)
+                        response = popup.exec_()
+            elif selection == edit_description:
+                if (selected := source.currentItem()): # only proceed if the user has selected something to rename
+                    new_description = ''
+                    yes_button = True
+                    while yes_button and not new_description:
+                        new_description, yes_button = QInputDialog.getMultiLineText(self, 'Description', f'What would you like the description for "{selected.text()}" to be?', selected.description)
+
+                        if not yes_button:
+                            return
+
+                        elif yes_button and new_description:
+                            self.db.update_metadata_description(selected.table, selected.id_, new_description)
                             self.signals.update_metadata.emit()
                             return
 
